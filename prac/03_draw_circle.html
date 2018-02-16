@@ -104,7 +104,7 @@
             gl.enableVertexAttribArray(vertexPositionAttribute);
             gl.bindBuffer(gl.ARRAY_BUFFER, trianglesVerticeBuffer);
             gl.vertexAttribPointer(vertexPositionAttribute, 3, gl.FLOAT, false, 0, 0);
-            gl.drawArrays(gl.POINTS, 0, 20000);
+            gl.drawArrays(gl.TRIANGLE_STRIP, 0, 20000);
         }
     </script>
 </head>
