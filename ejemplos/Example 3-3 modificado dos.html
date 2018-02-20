@@ -17,9 +17,8 @@
 	      varying highp vec4 vColor;
 
         uniform float uPosX;
-        uniform float uPosY;
         void main(void) {
-           gl_Position = vec4(aVertexPosition.x + uPosX, aVertexPosition.y + uPosY, aVertexPosition.z, 1.0);
+           gl_Position = vec4(aVertexPosition.x + uPosX, aVertexPosition.y - uPosX, aVertexPosition.z, 1.0);
 	         vColor = vec4(aVertexColor, 1.0);
         }
     </script>
@@ -141,17 +140,14 @@
             gl.drawArrays(gl.TRIANGLES, 0, 3);
         }
 
-	      function getUniforms() {
+	    function getUniforms() {
             translateXUniform = gl.getUniformLocation(glProgram, "uPosX");
-            translateYUniform = gl.getUniformLocation(glProgram, "uPosY");
         }
 
         function setUniforms(a) {
-            var newPosX = 1.5*Math.sin(a);
-            var newPosY = 1.5*Math.sin(a);
+            var newPos = 1.5*Math.sin(a);
 
-            gl.uniform1f(translateXUniform, newPosX);
-            gl.uniform1f(translateYUniform, newPosY);
+            gl.uniform1f(translateXUniform, newPos);
         }
     </script>
 </head>
