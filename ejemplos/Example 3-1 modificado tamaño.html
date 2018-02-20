@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
 <head>
-    <title>A Triangle</title>
+    <title>Example 3-1</title>
     <style>
         body {
             background-color: grey;
@@ -13,44 +13,61 @@
     </style>
     <script id="shader-vs" type="x-shader/x-vertex">
         attribute vec3 aVertexPosition;
+	      attribute vec3 aVertexColor;
+        varying highp vec4 vColor;
+
+        uniform float uPosX;
         void main(void) {
-        gl_Position = vec4(aVertexPosition, 1.0);
+             gl_Position = vec4(aVertexPosition.x, aVertexPosition.y + uPosX, aVertexPosition.z, 1.0 + uPosX); //La y y la z no se mueven
+	           vColor = vec4(aVertexColor, 1.0);
         }
     </script>
     <script id="shader-fs" type="x-shader/x-fragment">
+	      varying highp vec4 vColor;
         void main(void) {
-        gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+            gl_FragColor = vColor;
         }
     </script>
     <script>
         var gl = null,
-        canvas = null,
-        glProgram = null,
-        fragmentShader = null,
-        vertexShader = null;
+            canvas = null,
+            glProgram = null,
+            fragmentShader = null,
+            vertexShader = null;
         var vertexPositionAttribute = null,
-        trianglesVerticeBuffer = null;
+            trianglesVerticeBuffer = null;
+        var vertexColorAttribute = null,
+            trianglesColorBuffer = null;
+        var translateXUniform = null;
+        var angle = 0.0; //para el cambio de la figura
+
         function initWebGL() {
             canvas = document.getElementById("my-canvas");
             try {
                 gl = canvas.getContext("webgl") ||
-                canvas.getContext("experimental-webgl");
+                     canvas.getContext("experimental-webgl");
             } catch (e) {
             }
             if (gl) {
-                setupWebGL();
                 initShaders();
                 setupBuffers();
-                drawScene();
+                getUniforms();
+                (function animLoop() { //esta es la funcion callback
+                    setupWebGL();
+                    drawScene();
+                    requestAnimationFrame(animLoop, canvas); //para que sea infinito
+                })();
             } else {
                 alert("Error: Your browser does not appear to support WebGL.");
             }
         }
+
         function setupWebGL() {
             //set the clear color to a shade of green
             gl.clearColor(1.0, 1.0, 1.0, 1.0);
             gl.clear(gl.COLOR_BUFFER_BIT);
         }
+
         function initShaders() {
             //get shader source
             var fs_source = document.getElementById('shader-fs').innerHTML,
@@ -70,6 +87,7 @@
             //use program
             gl.useProgram(glProgram);
         }
+
         function makeShader(src, type) {
             //compile the vertex shader
             var shader = gl.createShader(type);
@@ -80,36 +98,61 @@
             }
             return shader;
         }
+
         function setupBuffers() {
-            triangleVertices = [];
-            //var sides = 360;
-            var sides = 10000;
-            for (var i=0.0; i<=sides; i++){
-                var vert1 = [Math.cos(i/sides*2*Math.PI),
-                             Math.sin(i/sides*2*Math.PI),
-                             0,];
-                var vert2 = [0,
-                             0,
-                             0,];
-                triangleVertices = triangleVertices.concat(vert1);
-                triangleVertices = triangleVertices.concat(vert2);
-            }
+            var triangleVertices = [
+                        //triangle Vertices
+                        -0.6, -0.5, 0.0,
+                         0.6, -0.5, 0.0,
+                         0.0,  0.5, 0.0,
+            ];
             trianglesVerticeBuffer = gl.createBuffer();
             gl.bindBuffer(gl.ARRAY_BUFFER, trianglesVerticeBuffer);
             gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(triangleVertices), gl.STATIC_DRAW);
-            return (triangleVertices.length/3);
+
+	        var triangleColors = [
+                        // triangle Colors
+                        1.0, 0.0, 0.0,
+                        0.0, 1.0, 0.0,
+                        0.0, 0.0, 1.0,
+            ];
+            trianglesColorBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, trianglesColorBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(triangleColors), gl.STATIC_DRAW);
         }
+
         function drawScene() {
             vertexPositionAttribute = gl.getAttribLocation(glProgram, "aVertexPosition");
+            //obtener localizacion de la variable atributo
             gl.enableVertexAttribArray(vertexPositionAttribute);
             gl.bindBuffer(gl.ARRAY_BUFFER, trianglesVerticeBuffer);
             gl.vertexAttribPointer(vertexPositionAttribute, 3, gl.FLOAT, false, 0, 0);
-            gl.drawArrays(gl.TRIANGLE_STRIP, 0, 20000); //triangleVertices.length/3 en vez de 20000
+
+            vertexColorAttribute = gl.getAttribLocation(glProgram, "aVertexColor");
+            gl.enableVertexAttribArray(vertexColorAttribute);
+            gl.bindBuffer(gl.ARRAY_BUFFER, trianglesColorBuffer);
+            gl.vertexAttribPointer(vertexColorAttribute, 3, gl.FLOAT, false, 0, 0);
+
+            setUniforms(); //añado esa funcion
+            gl.drawArrays(gl.TRIANGLES, 0, 3);
+        }
+
+	   function getUniforms() {
+           translateXUniform = gl.getUniformLocation(glProgram, "uPosX");
+        }
+
+        function setUniforms() {
+            //esto calcula el incremento en funcion de un angulo, movimiento
+            //mas facil con el incremento que copiar el array cada vez
+            var newPosX = 1.5*Math.sin(angle);//hasta donde llega
+            angle += 0.06;//velocidad
+
+            gl.uniform1f(translateXUniform, newPosX);
         }
     </script>
 </head>
 <body onload="initWebGL()">
-    <canvas id="my-canvas" width="400" height="400">
+    <canvas id="my-canvas" width="400" height="300">
         Your browser does not support the HTML5 canvas element.
     </canvas>
 </body>
