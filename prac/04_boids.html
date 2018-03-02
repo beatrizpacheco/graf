@@ -136,48 +136,29 @@
             gl.bindBuffer(gl.ARRAY_BUFFER, trianglesColorBuffer);
             gl.vertexAttribPointer(vertexColorAttribute, 3, gl.FLOAT, false, 0, 0);
 
-
             a=0.2;
             b=1;
             for(i=0; i<boids; i++){
-              drawTriangle(a, b, i);
               a+=0.1;
-              b+=0.1;
+              b+=0.085;
               count += 0.001;
-
-              /*if ((i % 2) == 0){
-                a+=0.1;
-                b+=0.1;
-                count += 0.001;
-              }else{
-                a+=0.0;
-                b+=0.0;
-                count += 0.002;
-              }*/
-
-
+              drawTriangle(a, b, i);
             }
         }
-
 
         function getUniforms() {
             mvMatrixUniform = gl.getUniformLocation(glProgram, "uMVMatrix");
         }
 
-
         function drawTriangle(a, b, i) {
 
-            /* Render triangle */
-            var posX = a*Math.cos(count/i)/b;
-            var posY = a*Math.sin(count/b);
-            //var posX = Math.random() * 830;
-            //var posY = Math.random() * 530;
-            //var mvMatrix = Math.random() * Math.PI * 2;
+            var posX = a*Math.cos(count/i);
+            var posY = a/b*Math.sin(count*a);
 
             mat4.identity(mvMatrix);
             mat4.translate(mvMatrix, [posX, -posY, 0.0]);
-            //mat4.rotate(mvMatrix, count, [0.0, 0.0, 1.0]);
-            //mat4.scale(mvMatrix, [posX, posX, 1.0]);
+            mat4.rotate(mvMatrix, count/i, [0.0, 0.0, 1.0]);
+
             gl.uniformMatrix4fv(mvMatrixUniform, false, mvMatrix);
             gl.drawArrays(gl.TRIANGLES, 0, 3);
         }
