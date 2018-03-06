@@ -21,7 +21,7 @@
         uniform mat4 uPMatrix;
         void main(void) {
              gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
-	         vColor = vec4(aVertexColor, 1.0);
+	           vColor = vec4(aVertexColor, 1.0);
         }
     </script>
     <script id="shader-fs" type="x-shader/x-fragment">
@@ -43,14 +43,14 @@
         var cubeAttrBuffer = null,
             cubeElemBuffer = null;
 
-	    var mvMatrix = mat4.create();
+	      var mvMatrix = mat4.create();
         var mvMatrixUniform = null;
-        
+
         var pMatrix = mat4.create();
         var pMatrixUniform = null;
-        
-        var angle = 0.0;        
-       
+
+        var angle = 0.0;
+
         function initWebGL() {
             canvas = document.getElementById("my-canvas");
             try {
@@ -71,18 +71,18 @@
                 alert("Error: Your browser does not appear to support WebGL.");
             }
         }
-        
+
         function setupWebGL() {
             gl.enable(gl.DEPTH_TEST);
-            gl.depthFunc(gl.LEQUAL);
-            
+            gl.depthFunc(gl.LEQUAL);//less equal, menor o igual
+
             //set the clear color to a shade of green
             gl.clearColor(1.0, 1.0, 1.0, 1.0);
-            
 
-	        gl.viewport(0, 0, canvas.width, canvas.height);
+
+	          gl.viewport(0, 0, canvas.width, canvas.height);
         }
-        
+
         function initShaders() {
             //get shader source
             var fs_source = document.getElementById('shader-fs').innerHTML,
@@ -102,7 +102,7 @@
             //use program
             gl.useProgram(glProgram);
         }
-        
+
         function makeShader(src, type) {
             //compile the vertex shader
             var shader = gl.createShader(type);
@@ -113,38 +113,38 @@
             }
             return shader;
         }
-        
+
         function setupBuffers() {
-            var cube_attributes =[
-                  -1,-1,-1,     1,1,0,
-                   1,-1,-1,     1,1,0,
-                   1, 1,-1,     1,1,0,
-                  -1, 1,-1,     1,1,0,
+            var cube_attributes =[//color y vertice
+                  -0.5,-0.5,-0.5,     1,1,0,
+                   0.5,-0.5,-0.5,     1,1,0,
+                   0.5, 0.5,-0.5,     1,1,0,
+                  -0.5, 0.5,-0.5,     1,1,0,
 
-                  -1,-1, 1,     0,0,1,
-                   1,-1, 1,     0,0,1,
-                   1, 1, 1,     0,0,1,
-                  -1, 1, 1,     0,0,1,
+                  -0.5,-0.5, 0.5,     0,0,1,
+                   0.5,-0.5, 0.5,     0,0,1,
+                   0.5, 0.5, 0.5,     0,0,1,
+                  -0.5, 0.5, 0.5,     0,0,1,
 
-                  -1,-1,-1,     0,1,1,
-                  -1, 1,-1,     0,1,1,
-                  -1, 1, 1,     0,1,1,
-                  -1,-1, 1,     0,1,1,
+                  -0.5,-0.5,-0.5,     0,1,1,
+                  -0.5, 0.5,-0.5,     0,1,1,
+                  -0.5, 0.5, 0.5,     0,1,1,
+                  -0.5,-0.5, 0.5,     0,1,1,
 
-                   1,-1,-1,     1,0,0,
-                   1, 1,-1,     1,0,0,
-                   1, 1, 1,     1,0,0,
-                   1,-1, 1,     1,0,0,
+                   0.5,-0.5,-0.5,     1,0,0,
+                   0.5, 0.5,-0.5,     1,0,0,
+                   0.5, 0.5, 0.5,     1,0,0,
+                   0.5,-0.5, 0.5,     1,0,0,
 
-                  -1,-1,-1,     1,0,1,
-                  -1,-1, 1,     1,0,1,
-                   1,-1, 1,     1,0,1,
-                   1,-1,-1,     1,0,1,
+                  -0.5,-0.5,-0.5,     1,0,1,
+                  -0.5,-0.5, 0.5,     1,0,1,
+                   0.5,-0.5, 0.5,     1,0,1,
+                   0.5,-0.5,-0.5,     1,0,1,
 
-                  -1, 1,-1,     0,1,0,
-                  -1, 1, 1,     0,1,0,
-                   1, 1, 1,     0,1,0,
-                   1, 1,-1,     0,1,0
+                  -0.5, 0.5,-0.5,     0,1,0,
+                  -0.5, 0.5, 0.5,     0,1,0,
+                   0.5, 0.5, 0.5,     0,1,0,
+                   0.5, 0.5,-0.5,     0,1,0
 
             ];
             cubeAttrBuffer = gl.createBuffer();
@@ -157,7 +157,7 @@
             vertexColorAttribute = gl.getAttribLocation(glProgram, "aVertexColor");
             gl.enableVertexAttribArray(vertexColorAttribute);
 
-	        var cube_faces = [
+	        var cube_faces = [//los vertices que va a ir pintando
                    0,1,2,
                    0,2,3,
 
@@ -190,14 +190,33 @@
 
         function drawScene() {
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-            
+
             gl.bindBuffer(gl.ARRAY_BUFFER, cubeAttrBuffer);
+            //4*(3+3), 0
+            //cada cuanto tengo info, y cuando empiezan
             gl.vertexAttribPointer(vertexPositionAttribute, 3, gl.FLOAT, false, 4*(3+3), 0);
             gl.vertexAttribPointer(vertexColorAttribute, 3, gl.FLOAT, false, 4*(3+3), 3*4);
+            /*x=-5;
+            y=-3;
+            for(i=0;i<5; i++){
+              x+=1.5;
+              y+=1;
+              setUniforms(x, y);
+              gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cubeElemBuffer);
+              gl.drawElements(gl.TRIANGLES, 6*2*3, gl.UNSIGNED_SHORT, 0);
+            }*/
 
-            setUniforms();
+            setUniforms(0, 0);
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cubeElemBuffer);
             gl.drawElements(gl.TRIANGLES, 6*2*3, gl.UNSIGNED_SHORT, 0);
+            setUniforms(5, 3);
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cubeElemBuffer);
+            gl.drawElements(gl.TRIANGLES, 6*2*3, gl.UNSIGNED_SHORT, 0);
+            setUniforms(4, 6);
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cubeElemBuffer);
+            gl.drawElements(gl.TRIANGLES, 6*2*3, gl.UNSIGNED_SHORT, 0);
+
+
         }
 
         function getUniforms() {
@@ -209,13 +228,16 @@
             gl.uniformMatrix4fv(pMatrixUniform, false, pMatrix);
         }
 
-        function setUniforms() {
-            angle += 0.01;
-	        mat4.identity(mvMatrix);
-            mat4.translate(mvMatrix, [0.0, 0.0, -6.0]);
+        function setUniforms(x, y) {
+            var newPosX = x*Math.sin(angle);
+            var newPosY = y*Math.cos(angle);
+            angle += 0.005;
+	          mat4.identity(mvMatrix);
+            mat4.translate(mvMatrix, [newPosX, newPosY, -6.0]);
             mat4.rotate(mvMatrix, angle, [0.0, 1.0, 0.5]);
             gl.uniformMatrix4fv(mvMatrixUniform, false, mvMatrix);
         }
+
     </script>
 </head>
 <body onload="initWebGL()">

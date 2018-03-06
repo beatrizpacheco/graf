@@ -44,8 +44,8 @@
         var mvMatrixUniform = null;
         var pMatrix = mat4.create();
         var pMatrixUniform = null;
-        var angle = 0.0;        
-        
+        var angle = 0.0;
+
         function initWebGL() {
             canvas = document.getElementById("my-canvas");
             try {
@@ -66,7 +66,7 @@
                 alert("Error: Your browser does not appear to support WebGL.");
             }
         }
-        
+
         function setupWebGL() {
             //set the clear color to a shade of green
             gl.clearColor(1.0, 1.0, 1.0, 1.0);
@@ -74,7 +74,7 @@
 
 	        gl.viewport(0, 0, canvas.width, canvas.height);
         }
-        
+
         function initShaders() {
             //get shader source
             var fs_source = document.getElementById('shader-fs').innerHTML,
@@ -94,7 +94,7 @@
             //use program
             gl.useProgram(glProgram);
         }
-        
+
         function makeShader(src, type) {
             //compile the vertex shader
             var shader = gl.createShader(type);
@@ -105,7 +105,7 @@
             }
             return shader;
         }
-        
+
         function setupBuffers() {
             var triangleVertices = [
                         //triangle Vertices
@@ -127,7 +127,7 @@
             gl.bindBuffer(gl.ARRAY_BUFFER, trianglesColorBuffer);
             gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(triangleColors), gl.STATIC_DRAW);
         }
-        
+
         function drawScene() {
             vertexPositionAttribute = gl.getAttribLocation(glProgram, "aVertexPosition");
             gl.enableVertexAttribArray(vertexPositionAttribute);
@@ -139,7 +139,11 @@
             gl.bindBuffer(gl.ARRAY_BUFFER, trianglesColorBuffer);
             gl.vertexAttribPointer(vertexColorAttribute, 3, gl.FLOAT, false, 0, 0);
 
-            setUniforms();
+            setUniforms1();
+            gl.drawArrays(gl.TRIANGLES, 0, 3);
+            setUniforms2();
+            gl.drawArrays(gl.TRIANGLES, 0, 3);
+            setUniforms3();
             gl.drawArrays(gl.TRIANGLES, 0, 3);
         }
 
@@ -148,16 +152,32 @@
 
             pMatrixUniform = gl.getUniformLocation(glProgram, "uPMatrix");
             var ratio = canvas.width/canvas.height;
-            mat4.perspective(60, ratio, 0.1, 100, pMatrix);
+            mat4.perspective(120, ratio, 0.1, 100, pMatrix);
             gl.uniformMatrix4fv(pMatrixUniform, false, pMatrix);
         }
 
-        function setUniforms() {
-            var newPos = -6.0 + 5.0*Math.sin(angle);
-            
+        function setUniforms1() {
+            var newPos = 6.0*Math.sin(angle);
+
             angle += 0.01;
-	        mat4.identity(mvMatrix);
-            mat4.translate(mvMatrix, [0.0, 0.0, newPos ]);
+	          mat4.identity(mvMatrix);
+            mat4.translate(mvMatrix, [0.0, 0.0, newPos]);
+            gl.uniformMatrix4fv(mvMatrixUniform, false, mvMatrix);
+        }
+        function setUniforms2() {
+            var newPos = 6.0 *Math.sin(angle);
+
+            angle += 0.02;
+	          mat4.identity(mvMatrix);
+            mat4.translate(mvMatrix, [0.0, newPos, -newPos]);
+            gl.uniformMatrix4fv(mvMatrixUniform, false, mvMatrix);
+        }
+        function setUniforms3() {
+            var newPos = 6.0 *Math.sin(angle);
+
+            angle += 0.005;
+	          mat4.identity(mvMatrix);
+            mat4.translate(mvMatrix, [newPos, 0.0, -newPos]);
             gl.uniformMatrix4fv(mvMatrixUniform, false, mvMatrix);
         }
     </script>
