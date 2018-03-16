@@ -28,6 +28,7 @@
         uniform sampler2D uSampler1;
         varying vec2 vTexCoord;
         void main(void) {
+            //uSampler son las unidades de texturas. Tenemos dos
             vec4 color0 = texture2D(uSampler0, vTexCoord);
             vec4 color1 = texture2D(uSampler1, vTexCoord);
             gl_FragColor = color0 * color1;
@@ -139,6 +140,7 @@
 
             return n;
         }
+        //CONTROLAR NUMEROS DE FSIZE SI HAY ERRORES
 
         function initTextures(n) {
             var texture0 = gl.createTexture();   // Create a texture object 0
