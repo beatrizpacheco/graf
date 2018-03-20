@@ -6,7 +6,6 @@
         body {
             background-color: grey;
         }
-
         canvas {
             background-color: white;
         }
@@ -16,7 +15,6 @@
         attribute vec3 aVertexPosition;
         attribute  vec2 aTexCoord;
         varying   vec2 vTexCoord;
-
         uniform mat4 uMVMatrix;
         uniform mat4 uPMatrix;
         void main(void) {
@@ -39,22 +37,16 @@
             glProgram = null,
             fragmentShader = null,
             vertexShader = null;
-
         var vertexPositionAttribute = null,
             vertexTexCoorAttribute = null;
         var fragmentSamplerUniform = null;
-
         var sphereAttrBuffer = null,
             sphereElemBuffer = null;
-
 	      var mvMatrix = mat4.create();
         var mvMatrixUniform = null;
-
         var pMatrix = mat4.create();
         var pMatrixUniform = null;
-
         var angle = 0.0;
-
         function initWebGL() {
             canvas = document.getElementById("my-canvas");
             try {
@@ -79,18 +71,13 @@
                 alert("Error: Your browser does not appear to support WebGL.");
             }
         }
-
         function setupWebGL() {
             gl.enable(gl.DEPTH_TEST);
             gl.depthFunc(gl.LEQUAL);
-
             //set the clear color to a shade of green
             gl.clearColor(1.0, 1.0, 1.0, 1.0);
-
-
 	          gl.viewport(0, 0, canvas.width, canvas.height);
         }
-
         function initShaders() {
             //get shader source
             var fs_source = document.getElementById('shader-fs').innerHTML,
@@ -110,7 +97,6 @@
             //use program
             gl.useProgram(glProgram);
         }
-
         function makeShader(src, type) {
             //compile the vertex shader
             var shader = gl.createShader(type);
@@ -121,14 +107,11 @@
             }
             return shader;
         }
-
         function setupBuffers() {
             var SPHERE_DIV = 40;
-
             var i, ai, si, ci;
             var j, aj, sj, cj;
             var p1, p2;
-
             var sphereAttributes = [];
             // Generate coordinates
             for (j = 0; j <= SPHERE_DIV; j++) {
@@ -139,60 +122,45 @@
                     ai = i * 2 * Math.PI / SPHERE_DIV;
                     si = Math.sin(ai);
                     ci = Math.cos(ai);
-
                     sphereAttributes.push(si * sj);  // X
                     sphereAttributes.push(cj);       // Y
                     sphereAttributes.push(ci * sj);  // Z
-
                     sphereAttributes.push(i/ SPHERE_DIV);
                     sphereAttributes.push(1 -(j/ SPHERE_DIV));
-
                 }
-
             }
-
             sphereAttrBuffer = gl.createBuffer();
             gl.bindBuffer(gl.ARRAY_BUFFER, sphereAttrBuffer);
             gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(sphereAttributes), gl.STATIC_DRAW);
-
             vertexPositionAttribute = gl.getAttribLocation(glProgram, "aVertexPosition");
             gl.enableVertexAttribArray(vertexPositionAttribute);
-
             vertexTexCoorAttribute = gl.getAttribLocation(glProgram, "aTexCoord");
             gl.enableVertexAttribArray(vertexTexCoorAttribute);
-
 	        var sphereFaces = [];
             // Generate indices
             for (j = 0; j < SPHERE_DIV; j++) {
                 for (i = 0; i < SPHERE_DIV; i++) {
                     p1 = j * (SPHERE_DIV+1) + i;
                     p2 = p1 + (SPHERE_DIV+1);
-
                     sphereFaces.push(p1);
                     sphereFaces.push(p2);
                     sphereFaces.push(p1 + 1);
-
                     sphereFaces.push(p1 + 1);
                     sphereFaces.push(p2);
                     sphereFaces.push(p2 + 1);
                 }
             }
-
             sphereElemBuffer = gl.createBuffer();
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, sphereElemBuffer);
             gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(sphereFaces), gl.STATIC_DRAW);
-
             return sphereFaces.length;
-
         }
-
         function initTextures() {
             var texture = gl.createTexture();   // Create a texture object
             if (!texture) {
                 console.log('Failed to create the texture object');
                 return false;
             }
-
             // Get the storage location of uSampler
             fragmentSamplerUniform = gl.getUniformLocation(glProgram, 'uSampler');
             if (!fragmentSamplerUniform) {
@@ -211,45 +179,35 @@
             image.setAttribute('crossorigin', 'anonymous');
             return true;
         }
-
         function loadTexture(gl, texture, fragmentSamplerUniform, image) {
           gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1); // Flip the image's y axis
           // Enable texture unit0
           gl.activeTexture(gl.TEXTURE0);
           // Bind the texture object to the target
           gl.bindTexture(gl.TEXTURE_2D, texture);
-
           // Set the texture parameters
           gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-
           // Set the texture image
           gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image);
-
           // Set the texture unit 0 to the sampler
           gl.uniform1i(fragmentSamplerUniform, 0);
         }
-
         function drawScene(n) {
           gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
           gl.bindBuffer(gl.ARRAY_BUFFER, sphereAttrBuffer);
           gl.vertexAttribPointer(vertexPositionAttribute, 3, gl.FLOAT, false, 4*(3+2), 0);
           gl.vertexAttribPointer(vertexTexCoorAttribute, 2, gl.FLOAT, false, 4*(3+2), 3*4);
-
           setUniforms();
           gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, sphereElemBuffer);
           gl.drawElements(gl.TRIANGLES, n, gl.UNSIGNED_SHORT, 0);
         }
-
         function getUniforms() {
           mvMatrixUniform = gl.getUniformLocation(glProgram, "uMVMatrix");
-
           pMatrixUniform = gl.getUniformLocation(glProgram, "uPMatrix");
           var ratio = canvas.width/canvas.height;
           mat4.perspective(30, ratio, 0.1, 100, pMatrix);
           gl.uniformMatrix4fv(pMatrixUniform, false, pMatrix);
         }
-
         function setUniforms() {
           angle += 0.01;
           mat4.identity(mvMatrix);
