@@ -14,14 +14,14 @@
     <script src="gl-matrix-min.js"></script>
     <script id="shader-vs" type="x-shader/x-vertex">
         attribute vec3 aVertexPosition;
-	    attribute vec3 aVertexColor;
-	    varying highp vec4 vColor;
+	      attribute vec3 aVertexColor;
+	      varying highp vec4 vColor;
 
         uniform mat4 uMVMatrix;
         uniform mat4 uPMatrix;
         void main(void) {
              gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
-	         vColor = vec4(aVertexColor, 1.0);
+	           vColor = vec4(aVertexColor, 1.0);
         }
     </script>
     <script id="shader-fs" type="x-shader/x-fragment">
@@ -43,14 +43,14 @@
         var sphereAttrBuffer = null,
             sphereElemBuffer = null;
 
-	    var mvMatrix = mat4.create();
+	      var mvMatrix = mat4.create();
         var mvMatrixUniform = null;
-        
+
         var pMatrix = mat4.create();
         var pMatrixUniform = null;
-        
-        var angle = 0.0;        
-       
+
+        var angle = 0.0;
+
         function initWebGL() {
             canvas = document.getElementById("my-canvas");
             try {
@@ -71,18 +71,18 @@
                 alert("Error: Your browser does not appear to support WebGL.");
             }
         }
-        
+
         function setupWebGL() {
             gl.enable(gl.DEPTH_TEST);
             gl.depthFunc(gl.LEQUAL);
-            
+
             //set the clear color to a shade of green
             gl.clearColor(1.0, 1.0, 1.0, 1.0);
-            
+
 
 	        gl.viewport(0, 0, canvas.width, canvas.height);
         }
-        
+
         function initShaders() {
             //get shader source
             var fs_source = document.getElementById('shader-fs').innerHTML,
@@ -102,7 +102,7 @@
             //use program
             gl.useProgram(glProgram);
         }
-        
+
         function makeShader(src, type) {
             //compile the vertex shader
             var shader = gl.createShader(type);
@@ -113,14 +113,14 @@
             }
             return shader;
         }
-        
+
         function setupBuffers() {
             var SPHERE_DIV = 40;
 
             var i, ai, si, ci;
             var j, aj, sj, cj;
             var p1, p2;
- 
+
             var sphereAttributes = [];
             // Generate coordinates
             for (j = 0; j <= SPHERE_DIV; j++) {
@@ -135,7 +135,7 @@
                     sphereAttributes.push(si * sj);  // X
                     sphereAttributes.push(cj);       // Y
                     sphereAttributes.push(ci * sj);  // Z
-                    
+
                     sphereAttributes.push(Math.abs(si * sj));  // Color X
                     sphereAttributes.push(Math.abs(cj));       // Color Y
                     sphereAttributes.push(Math.abs(ci * sj));  // Color Z
@@ -163,11 +163,11 @@
                     sphereFaces.push(p1);
                     sphereFaces.push(p2);
                     sphereFaces.push(p1 + 1);
-                    
+
                     sphereFaces.push(p1 + 1);
                     sphereFaces.push(p2);
                     sphereFaces.push(p2 + 1);
-                }       
+                }
             }
 
             sphereElemBuffer = gl.createBuffer();
@@ -175,12 +175,12 @@
             gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(sphereFaces), gl.STATIC_DRAW);
 
             return sphereFaces.length;
-            
+
         }
 
         function drawScene(n) {
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-            
+
             gl.bindBuffer(gl.ARRAY_BUFFER, sphereAttrBuffer);
             gl.vertexAttribPointer(vertexPositionAttribute, 3, gl.FLOAT, false, 4*(3+3), 0);
             gl.vertexAttribPointer(vertexColorAttribute, 3, gl.FLOAT, false, 4*(3+3), 3*4);

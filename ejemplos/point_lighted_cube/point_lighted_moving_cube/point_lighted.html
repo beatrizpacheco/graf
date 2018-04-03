@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
 <head>
-    <title>Lighted + Ambient Light (Animated) Cube</title>
+    <title>Point Lighted + Ambient Light (Animated) Cube</title>
     <style>
         body {
             background-color: grey;
@@ -13,28 +13,36 @@
     </style>
     <script src="gl-matrix-min.js"></script>
     <script id="shader-vs" type="x-shader/x-vertex">
-        attribute vec3 aVertexPosition;
-	    attribute vec3 aVertexColor;  // Surface base color
+        attribute vec4 aVertexPosition;
+	      attribute vec3 aVertexColor;  // Surface base color
         attribute vec4 aVertexNormal; // Normal ==> Surface orientation
 
         uniform vec3 uLightColor;
-        uniform vec3 uLightDirection; // Light direction (in the world coordinate, normalized)
+        uniform vec3 uLightPosition;  // Position of the light source
+        uniform vec3 uAmbientLight;   // Color of an ambient light
+
         uniform mat4 uNMatrix;
         uniform mat4 uMVMatrix;
         uniform mat4 uPMatrix;
-        uniform vec3 uAmbientLight;   // Color of an ambient light
 
         varying highp vec4 vColor;
         void main(void) {
-             gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
-             // Make the length of the normal 1.0
-             vec4 normal = uNMatrix * aVertexNormal;
-             // Dot product of the light direction and the orientation of a surface (the normal)
-             float nDotL = max(dot(uLightDirection, normalize(normal.xyz)), 0.0);
-             // Calculate the color due to diffuse reflection + ambient light
-             vec3 ambient = uAmbientLight * aVertexColor.rgb;
-             vec3 diffuse = uLightColor * aVertexColor.rgb * nDotL;
-	           vColor = vec4(diffuse + ambient, 1.0);
+            gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition.xyz, 1.0);
+            // Recalculate the normal based on the model matrix and make its length 1.
+            vec3 normal = normalize(vec3(uNMatrix * aVertexNormal));
+            // Calculate world coordinate of vertex
+            vec4 vertexPosition = uMVMatrix * aVertexPosition;
+            // Calculate the light direction and make it 1.0 in length
+            vec3 lightDirection = normalize(uLightPosition - vec3(vertexPosition));
+            //TENEMOS EN CUENTA LAS COORDENADAS Y EL ÁNGULO CON EL QUE ESTÁ INCIDIENDO
+            // Calculate the dot product of the normal and light direction
+            float nDotL = max(dot(normal, lightDirection), 0.0);
+            // Calculate the color due to diffuse reflection
+            vec3 diffuse = uLightColor * aVertexColor.rgb * nDotL;
+            // Calculate the color due to ambient reflection
+            vec3 ambient = uAmbientLight * aVertexColor.rgb;
+            // Add the surface colors due to diffuse reflection and ambient reflection
+            vColor = vec4(diffuse + ambient, 1.0);
         }
     </script>
     <script id="shader-fs" type="x-shader/x-fragment">
@@ -60,7 +68,7 @@
             normalsBuffer = null,
             indicesBuffer = null;
 
-	    var mvMatrix = mat4.create();
+	      var mvMatrix = mat4.create();
         var mvMatrixUniform = null;
 
         var pMatrix = mat4.create();
@@ -69,7 +77,7 @@
         var nMatrix = mat4.create();
         var nMatrixUniform = null;
 
-        var lightDirectionUniform = null;
+        var lightPositionUniform = null;
         var ambientLightUniform = null;
         var lightColorUniform = null;
 
@@ -231,11 +239,11 @@
             nMatrixUniform = gl.getUniformLocation(glProgram, "uNMatrix");
             pMatrixUniform = gl.getUniformLocation(glProgram, "uPMatrix");
             lightColorUniform = gl.getUniformLocation(glProgram, "uLightColor");
-            lightDirectionUniform = gl.getUniformLocation(glProgram, "uLightDirection");
+            lightPositionUniform = gl.getUniformLocation(glProgram, "uLightPosition");
             ambientLightUniform = gl.getUniformLocation(glProgram, "uAmbientLight");
 
 
-           if (!mvMatrixUniform || !nMatrixUniform || !pMatrixUniform || !lightDirectionUniform || !ambientLightUniform || !lightColorUniform) {
+           if (!mvMatrixUniform || !nMatrixUniform || !pMatrixUniform || !lightPositionUniform || !ambientLightUniform || !lightColorUniform) {
                 console.log('Failed to get the storage location');
                 return;
             }
@@ -248,9 +256,9 @@
             // Set the color light
             gl.uniform3f(lightColorUniform, 1.0, 1.0, 1.0);
             // Set the light direction (in the world coordinate)
-            var lightDirection = [0.5, 3.0, 4.0];
-            normalize(lightDirection);
-            gl.uniform3f(lightDirectionUniform, lightDirection[0], lightDirection[1], lightDirection[2]);
+            var lightPosition = [2.3, 4.0, 3.5];//POSICION DE LA LUZ
+            normalize(lightPosition);
+            gl.uniform3f(lightPositionUniform, lightPosition[0], lightPosition[1], lightPosition[2]);
             // Set the ambient light
             gl.uniform3f(ambientLightUniform, 0.2, 0.2, 0.2);
         }

@@ -14,10 +14,10 @@
     <script src="gl-matrix-min.js"></script>
     <script id="shader-vs" type="x-shader/x-vertex">
         attribute vec3 aVertexPosition;
-	    attribute vec3 aVertexColor;     // Surface base color
+	      attribute vec3 aVertexColor;     // Surface base color
         attribute vec4 aVertexNormal;    // Normal ==> Surface orientation
 
-	    varying highp vec4 vColor;
+	      varying highp vec4 vColor;
 
         uniform vec3 uLightColor;      // Light color
         uniform vec3 uLightDirection;  // Light direction (in the world coordinate, normalized)
@@ -56,7 +56,7 @@
             normalsBuffer = null,
             indicesBuffer = null;
 
-	    var mvMatrix = mat4.create();
+	      var mvMatrix = mat4.create();
         var mvMatrixUniform = null;
 
         var pMatrix = mat4.create();
