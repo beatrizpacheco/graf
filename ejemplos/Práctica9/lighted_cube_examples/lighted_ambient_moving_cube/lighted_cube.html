@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
 <head>
-    <title>Per Fragment Point Lighted + Ambient Light (Animated) Cube</title>
+    <title>Lighted + Ambient Light (Animated) Cube</title>
     <style>
         body {
             background-color: grey;
@@ -13,48 +13,35 @@
     </style>
     <script src="gl-matrix-min.js"></script>
     <script id="shader-vs" type="x-shader/x-vertex">
-        attribute vec4 aVertexPosition;
-	    attribute vec3 aVertexColor;  // Surface base color
+        attribute vec3 aVertexPosition;
+	      attribute vec3 aVertexColor;  // Surface base color
         attribute vec4 aVertexNormal; // Normal ==> Surface orientation
 
+        uniform vec3 uLightColor;
+        uniform vec3 uLightDirection; // Light direction (in the world coordinate, normalized)
         uniform mat4 uNMatrix;
         uniform mat4 uMVMatrix;
         uniform mat4 uPMatrix;
-        
+        uniform vec3 uAmbientLight;   // Color of an ambient light
+
         varying highp vec4 vColor;
-        varying highp vec3 vNormal;
-        varying highp vec3 vPosition;
-        
         void main(void) {
-            gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition.xyz, 1.0);
-            // Calculate the vertex position in the world coordinate
-            vPosition = vec3(uMVMatrix * aVertexPosition);
-            vNormal = normalize(vec3(uNMatrix * aVertexNormal));
-            vColor = vec4(aVertexColor, 1.0);
+             gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+             // Make the length of the normal 1.0
+             vec4 normal = uNMatrix * aVertexNormal;
+             // Dot product of the light direction and the orientation of a surface (the normal)
+             float nDotL = max(dot(uLightDirection, normalize(normal.xyz)), 0.0);
+             // Calculate the color due to diffuse reflection + ambient light
+             vec3 ambient = uAmbientLight * aVertexColor.rgb;
+             vec3 diffuse = uLightColor * aVertexColor.rgb * nDotL;
+	           vColor = vec4(diffuse + ambient, 1.0);
         }
     </script>
     <script id="shader-fs" type="x-shader/x-fragment">
         precision mediump float;
-        
-        uniform vec3 uLightColor;     // Light color
-        uniform vec3 uLightPosition;  // Position of the light source
-        uniform vec3 uAmbientLight;   // Color of an ambient light
-
-        varying highp vec4 vColor;
-        varying highp vec3 vNormal;
-        varying highp vec3 vPosition;
-        
+	    varying highp vec4 vColor;
         void main(void) {
-            // Normalize the normal because it is interpolated and not 1.0 in length any more
-            vec3 normal = normalize(vNormal);
-            // Calculate the light direction and make its length 1.
-            vec3 lightDirection = normalize(uLightPosition - vPosition);
-            // The dot product of the light direction and the orientation of a surface (the normal)
-            float nDotL = max(dot(lightDirection, normal), 0.0);
-            // Calculate the final color from diffuse reflection and ambient reflection
-            vec3 diffuse = uLightColor * vColor.rgb * nDotL;
-            vec3 ambient = uAmbientLight * vColor.rgb;
-            gl_FragColor = vec4(diffuse + ambient, vColor.a);
+            gl_FragColor = vColor;
         }
     </script>
     <script>
@@ -73,22 +60,22 @@
             normalsBuffer = null,
             indicesBuffer = null;
 
-	    var mvMatrix = mat4.create();
+	      var mvMatrix = mat4.create();
         var mvMatrixUniform = null;
-        
+
         var pMatrix = mat4.create();
         var pMatrixUniform = null;
-        
+
         var nMatrix = mat4.create();
         var nMatrixUniform = null;
-        
-        var lightPositionUniform = null;
+
+        var lightDirectionUniform = null;
         var ambientLightUniform = null;
         var lightColorUniform = null;
 
 
-        var angle = 0.0;        
-       
+        var angle = 0.0;
+
         function initWebGL() {
             canvas = document.getElementById("my-canvas");
             try {
@@ -110,18 +97,16 @@
                 alert("Error: Your browser does not appear to support WebGL.");
             }
         }
-        
+
         function setupWebGL() {
             gl.enable(gl.DEPTH_TEST);
             gl.depthFunc(gl.LEQUAL);
-            
+
             //set the clear color to a shade of green
             gl.clearColor(0.0, 0.0, 0.0, 1.0);
-            
-
-	        gl.viewport(0, 0, canvas.width, canvas.height);
+	          gl.viewport(0, 0, canvas.width, canvas.height);
         }
-        
+
         function initShaders() {
             //get shader source
             var fs_source = document.getElementById('shader-fs').innerHTML,
@@ -141,7 +126,7 @@
             //use program
             gl.useProgram(glProgram);
         }
-        
+
         function makeShader(src, type) {
             //compile the vertex shader
             var shader = gl.createShader(type);
@@ -152,7 +137,7 @@
             }
             return shader;
         }
-        
+
         function setupBuffers() {
           // Create a cube
           //    v6----- v5
@@ -190,7 +175,7 @@
             0.0,-1.0, 0.0,   0.0,-1.0, 0.0,   0.0,-1.0, 0.0,   0.0,-1.0, 0.0,  // v7-v4-v3-v2 down
             0.0, 0.0,-1.0,   0.0, 0.0,-1.0,   0.0, 0.0,-1.0,   0.0, 0.0,-1.0   // v4-v7-v6-v5 back
           ]);
-            
+
             verticesBuffer = gl.createBuffer();
             gl.bindBuffer(gl.ARRAY_BUFFER, verticesBuffer);
             gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
@@ -206,7 +191,7 @@
             vertexColorAttribute = gl.getAttribLocation(glProgram, "aVertexColor");
             gl.enableVertexAttribArray(vertexColorAttribute);
             gl.vertexAttribPointer(vertexColorAttribute, 3, gl.FLOAT, false, 0, 0);
-            
+
             normalsBuffer = gl.createBuffer();
             gl.bindBuffer(gl.ARRAY_BUFFER, normalsBuffer);
             gl.bufferData(gl.ARRAY_BUFFER, normals, gl.STATIC_DRAW);
@@ -227,7 +212,7 @@
             indicesBuffer = gl.createBuffer();
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indicesBuffer);
             gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW);
-            
+
             return indices.length;
         }
 
@@ -235,7 +220,7 @@
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
             setUniforms();
-            
+
             gl.drawElements(gl.TRIANGLES, n, gl.UNSIGNED_BYTE, 0);
         }
 
@@ -244,33 +229,33 @@
             nMatrixUniform = gl.getUniformLocation(glProgram, "uNMatrix");
             pMatrixUniform = gl.getUniformLocation(glProgram, "uPMatrix");
             lightColorUniform = gl.getUniformLocation(glProgram, "uLightColor");
-            lightPositionUniform = gl.getUniformLocation(glProgram, "uLightPosition");
+            lightDirectionUniform = gl.getUniformLocation(glProgram, "uLightDirection");
             ambientLightUniform = gl.getUniformLocation(glProgram, "uAmbientLight");
 
-            
-           if (!mvMatrixUniform || !nMatrixUniform || !pMatrixUniform || !lightPositionUniform || !ambientLightUniform || !lightColorUniform) { 
+
+           if (!mvMatrixUniform || !nMatrixUniform || !pMatrixUniform || !lightDirectionUniform || !ambientLightUniform || !lightColorUniform) {
                 console.log('Failed to get the storage location');
                 return;
             }
-            
+
             var ratio = canvas.width/canvas.height;
             mat4.perspective(45, ratio, 0.1, 100, pMatrix);
             gl.uniformMatrix4fv(pMatrixUniform, false, pMatrix);
-            
-            
+
+
             // Set the color light
-            gl.uniform3f(lightColorUniform, 1.0, 1.0, 1.0);            
+            gl.uniform3f(lightColorUniform, 1.0, 1.0, 1.0);
             // Set the light direction (in the world coordinate)
-            var lightPosition = [2.3, 4.0, 3.5];
-            normalize(lightPosition);
-            gl.uniform3f(lightPositionUniform, lightPosition[0], lightPosition[1], lightPosition[2]);
+            var lightDirection = [0.5, 3.0, 4.0];
+            normalize(lightDirection);
+            gl.uniform3f(lightDirectionUniform, lightDirection[0], lightDirection[1], lightDirection[2]);
             // Set the ambient light
             gl.uniform3f(ambientLightUniform, 0.2, 0.2, 0.2);
         }
 
         function setUniforms() {
             angle += 0.01;
-	        mat4.identity(mvMatrix);
+	          mat4.identity(mvMatrix);
             mat4.translate(mvMatrix, [0.0, 0.0, -6.0]);
             mat4.rotate(mvMatrix, angle, [0.0, 1.0, 0.5]);
             gl.uniformMatrix4fv(mvMatrixUniform, false, mvMatrix);
@@ -279,7 +264,7 @@
             mat4.transpose(nMatrix);
             gl.uniformMatrix4fv(nMatrixUniform, false, nMatrix);
         }
-        
+
         function normalize(v) {
             var c = v[0], d = v[1], e = v[2], g = Math.sqrt(c*c+d*d+e*e);
             if(g){
