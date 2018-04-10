@@ -26,19 +26,20 @@ var cube2;
 //Plane
 const FIELD_WIDTH = 400,
       FIELD_HEIGTH = 200;
-
 const PLANE_WIDTH = FIELD_WIDTH,
       PLANE_HEIGTH = FIELD_HEIGTH,
       PLANE_QUALITY = 10;
 
 //palas
-const PADDLE_WITH = 10,
+const PADDLE_WIDTH = 10,
       PADDLE_HEIGTH = 30,
       PADDLE_DEPTH = 10,
       PADDLE_QUALITY = 1;
+
 var playerPaddleDirY = 0,
     cpuPaddleDirY = 0,
     paddleSpeed = 3;
+
 var playerPaddle,
     cpuPaddle;
 
@@ -47,10 +48,10 @@ var playerPaddle,
 function setup()
 {
 	createScene();
-
+    addCubeMesh1();
     addSphereMesh(); //añade objeto
     addPlaneMesh();
-    addCubeMesh1();
+
     addCubeMesh2();
     addLight(); //añade iluminacion
     requestAnimationFrame(draw); //dibujaaa
@@ -70,7 +71,8 @@ function createScene()
             VIEW_ANGLE,
             ASPECT,
             NEAR,
-            FAR);
+            FAR
+        );
 
     scene = new THREE.Scene();
 
@@ -89,13 +91,14 @@ function addPlaneMesh()
     var geometry = new THREE.PlaneGeometry(
         PLANE_WIDTH,
         PLANE_HEIGTH );
-    var material = new THREE.MeshLambertMaterial({color:0xffffff});
+    var material = new THREE.MeshLambertMaterial(
+      {
+        color: '#FFF8DC'
+      });
     // Create a new mesh with sphere geometry
     plane = new THREE.Mesh(geometry, material);
 
     // Move the Sphere back in Z so we can see it
-    // plane.position.x = 200;
-    // plane.position.y = 200;
     plane.position.z = -300;
 
     // Finally, add the sphere to the scene
@@ -109,12 +112,15 @@ function addSphereMesh()
         RADIUS,
         SEGMENTS,
         RINGS);
-    var material = new THREE.MeshLambertMaterial({color:0x7FFF00});
+    var material = new THREE.MeshLambertMaterial(
+      {
+        color: '#00FF00'
+      });
     // Create a new mesh with sphere geometry
     sphere = new THREE.Mesh(geometry, material);
 
     // Move the Sphere back in Z so we can see it
-    sphere.position.z = -300;
+    sphere.position.z = -200;
 
     // Finally, add the sphere to the scene
     scene.add(sphere);
@@ -122,26 +128,32 @@ function addSphereMesh()
 }
 
 function addCubeMesh1(){
-	var geometry = new THREE.BoxGeometry( PADDLE_WITH, PADDLE_HEIGTH , PADDLE_DEPTH);
-	var material = new THREE.MeshLambertMaterial({color:0x7FFF00}); //{ color: 0x00ff00 } rojo, verde, azul. Verde por ff
+	var geometry = new THREE.BoxGeometry( PADDLE_WIDTH, PADDLE_HEIGTH , PADDLE_DEPTH);
+	var material = new THREE.MeshLambertMaterial(
+    {
+      color: '#2E9AFE'
+    }); //{ color: 0x00ff00 } rojo, verde, azul. Verde por ff
 	cube1 = new THREE.Mesh( geometry, material ); //crea el cubo
 	// Move the Sphere back in Z so we can see it
-	cube1.position.z = -300;
+	cube1.position.z = -100;
 	cube1.position.x = 30;
-  console.log("paso por aqui");
+  console.log("paso por aqui 1");
 	// Finally, add the sphere to the scene
 	scene.add( cube1 ); //añado el cubo a la escena
 
 }
 
 function addCubeMesh2(){
-	var geometry = new THREE.BoxGeometry( PADDLE_WITH, PADDLE_HEIGTH , PADDLE_DEPTH);
-	var material = new THREE.MeshLambertMaterial({color:0x7FFF00}); //{ color: 0x00ff00 } rojo, verde, azul. Verde por ff
+	var geometry = new THREE.BoxGeometry( PADDLE_WIDTH, PADDLE_HEIGTH , PADDLE_DEPTH);
+	var material = new THREE.MeshLambertMaterial(
+    {
+      color: '#FF0000'
+    }); //{ color: 0x00ff00 } rojo, verde, azul. Verde por ff
 	cube2 = new THREE.Mesh( geometry, material ); //crea el cubo
 	// Move the Sphere back in Z so we can see it
-	cube2.position.z = -300;
+	cube2.position.z = -100;
 	cube2.position.x = -30;
-
+  console.log("paso por aqui 2");
 	// Finally, add the sphere to the scene
 	scene.add( cube2 ); //añado el cubo a la escena
 
@@ -151,9 +163,7 @@ function addLight()
 {
     // Create a point light
     pointLight =
-			//new THREE.AmbientLight( 0x404040 );
 			new THREE.PointLight(0xffffff);
-			//new THREE.DirectionalLight( 0xffffff, 1 ); // EL NÚMERO ES LA INTENSIDAD
 
     // Set its position
     pointLight.position.x = 10;
@@ -166,10 +176,6 @@ function addLight()
 
 function draw()
 {
-		//PARA QUE LA ESFERA SE MUEVA!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-		// sphere.rotation.x += 0.01;
-		// sphere.rotation.y += 0.01;
-
 
 		// Draw!
     renderer.render(scene, camera);
