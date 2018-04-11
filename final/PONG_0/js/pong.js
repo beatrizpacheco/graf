@@ -20,8 +20,8 @@ const RADIUS = 5,
 
 var sphere;
 var plane;
-var cube1;
-var cube2;
+var playerPaddle;
+var cpuPaddle;
 
 //Plane
 const FIELD_WIDTH = 400,
@@ -30,7 +30,7 @@ const PLANE_WIDTH = FIELD_WIDTH,
       PLANE_HEIGTH = FIELD_HEIGTH,
       PLANE_QUALITY = 10;
 
-//palas
+//Paddle
 const PADDLE_WIDTH = 10,
       PADDLE_HEIGTH = 30,
       PADDLE_DEPTH = 10,
@@ -40,19 +40,17 @@ var playerPaddleDirY = 0,
     cpuPaddleDirY = 0,
     paddleSpeed = 3;
 
-var playerPaddle,
-    cpuPaddle;
+
 
 // GAME FUNCTIONS
 
 function setup()
 {
 	createScene();
-    addCubeMesh1();
-    addSphereMesh(); //añade objeto
     addPlaneMesh();
-
-    addCubeMesh2();
+    addSphereMesh(); //añade objeto
+    addCubeMeshPlayer();
+    addCubeMeshCPU();
     addLight(); //añade iluminacion
     requestAnimationFrame(draw); //dibujaaa
 }
@@ -61,7 +59,7 @@ function createScene()
 {
     // Set up all the 3D objects in the scene
 
-	// Get the DOM element to attach to
+	  // Get the DOM element to attach to
     gameCanvas = document.getElementById('gameCanvas');
 
     // Create a WebGL renderer, camera and a scene
@@ -93,7 +91,7 @@ function addPlaneMesh()
         PLANE_HEIGTH );
     var material = new THREE.MeshLambertMaterial(
       {
-        color: '#FFF8DC'
+        color: '#F8F8FF'
       });
     // Create a new mesh with sphere geometry
     plane = new THREE.Mesh(geometry, material);
@@ -127,35 +125,43 @@ function addSphereMesh()
 
 }
 
-function addCubeMesh1(){
-	var geometry = new THREE.BoxGeometry( PADDLE_WIDTH, PADDLE_HEIGTH , PADDLE_DEPTH);
+function addCubeMeshPlayer(){
+	var geometry = new THREE.BoxGeometry(
+      PADDLE_WIDTH,
+      PADDLE_HEIGTH ,
+      PADDLE_DEPTH);
 	var material = new THREE.MeshLambertMaterial(
     {
-      color: '#2E9AFE'
-    }); //{ color: 0x00ff00 } rojo, verde, azul. Verde por ff
-	cube1 = new THREE.Mesh( geometry, material ); //crea el cubo
-	// Move the Sphere back in Z so we can see it
-	cube1.position.z = -100;
-	cube1.position.x = 30;
-  console.log("paso por aqui 1");
-	// Finally, add the sphere to the scene
-	scene.add( cube1 ); //añado el cubo a la escena
+      color: '#0000FF'
+    });
+	playerPaddle = new THREE.Mesh( geometry, material ); //crea el cubo
+
+  // Move the Sphere back in Z so we can see it
+	playerPaddle.position.z = -100;
+	playerPaddle.position.x = 50;
+
+  // Finally, add the sphere to the scene
+	scene.add( playerPaddle ); //añado el cubo a la escena
 
 }
 
-function addCubeMesh2(){
-	var geometry = new THREE.BoxGeometry( PADDLE_WIDTH, PADDLE_HEIGTH , PADDLE_DEPTH);
+function addCubeMeshCPU(){
+	var geometry = new THREE.BoxGeometry(
+      PADDLE_WIDTH,
+      PADDLE_HEIGTH ,
+      PADDLE_DEPTH);
 	var material = new THREE.MeshLambertMaterial(
     {
       color: '#FF0000'
-    }); //{ color: 0x00ff00 } rojo, verde, azul. Verde por ff
-	cube2 = new THREE.Mesh( geometry, material ); //crea el cubo
-	// Move the Sphere back in Z so we can see it
-	cube2.position.z = -100;
-	cube2.position.x = -30;
-  console.log("paso por aqui 2");
-	// Finally, add the sphere to the scene
-	scene.add( cube2 ); //añado el cubo a la escena
+    }); 
+	cpuPaddle = new THREE.Mesh( geometry, material ); //crea el cubo
+
+  // Move the Sphere back in Z so we can see it
+	cpuPaddle.position.z = -100;
+	cpuPaddle.position.x = -50;
+
+  // Finally, add the sphere to the scene
+	scene.add( cpuPaddle ); //añado el cubo a la escena
 
 }
 
