@@ -1,3 +1,5 @@
+//voy por el 8.4!!!!!!!!!!!!!!!!!!!!!! MOVER LA PALA DE LA CPU!!!!!!!!!!!!!!!!!!!!!!!!!
+
 // GLOBAL VARIABLES
 const WIDTH = 640,
       HEIGHT = 360;
@@ -38,9 +40,14 @@ const PADDLE_WIDTH = 10,
 
 var playerPaddleDirY = 0,
     cpuPaddleDirY = 0,
-    paddleSpeed = 3;
+    paddleSpeed = 3,
+    PaleDirX = 1,
+    PaleDirY = 1;
 
-
+//mvto pelota
+var ballDirX = 1,
+    ballDirY = 1,
+    ballSpeed = 2;
 
 // GAME FUNCTIONS
 
@@ -71,6 +78,7 @@ function createScene()
             NEAR,
             FAR
         );
+
 
     scene = new THREE.Scene();
 
@@ -118,7 +126,7 @@ function addSphereMesh()
     sphere = new THREE.Mesh(geometry, material);
 
     // Move the Sphere back in Z so we can see it
-    sphere.position.z = -200;
+    sphere.position.z = -300;
 
     // Finally, add the sphere to the scene
     scene.add(sphere);
@@ -137,8 +145,8 @@ function addCubeMeshPlayer(){
 	playerPaddle = new THREE.Mesh( geometry, material ); //crea el cubo
 
   // Move the Sphere back in Z so we can see it
-	playerPaddle.position.z = -100;
-	playerPaddle.position.x = 50;
+	playerPaddle.position.z = -300;
+	playerPaddle.position.x = -190;
 
   // Finally, add the sphere to the scene
 	scene.add( playerPaddle ); //añado el cubo a la escena
@@ -153,12 +161,12 @@ function addCubeMeshCPU(){
 	var material = new THREE.MeshLambertMaterial(
     {
       color: '#FF0000'
-    }); 
+    });
 	cpuPaddle = new THREE.Mesh( geometry, material ); //crea el cubo
 
   // Move the Sphere back in Z so we can see it
-	cpuPaddle.position.z = -100;
-	cpuPaddle.position.x = -50;
+	cpuPaddle.position.z = -300;
+	cpuPaddle.position.x = 190;
 
   // Finally, add the sphere to the scene
 	scene.add( cpuPaddle ); //añado el cubo a la escena
@@ -182,8 +190,30 @@ function addLight()
 
 function draw()
 {
+    //MOVER EL BALON
+    sphere.position.x += ballDirX * ballSpeed;
+    if (sphere.position.x == PLANE_WIDTH/2 || sphere.position.x == -PLANE_WIDTH/2){
+      ballDirX = -ballDirX;
+    }
+    sphere.position.y += ballDirY * ballSpeed;
+    if (sphere.position.y == PLANE_HEIGTH/2 || sphere.position.y == -PLANE_HEIGTH/2){
+      ballDirY = -ballDirY;
+    }
 
-		// Draw!
+    //MOVER LA PALA
+    if (Key.isDown(Key.A)){
+      if (playerPaddle.position.y <= (PLANE_HEIGTH/2 - PADDLE_HEIGTH/2)){
+        playerPaddle.position.y += PaleDirX * paddleSpeed;
+      }
+    }
+    if (Key.isDown(Key.D)){
+      if (playerPaddle.position.y >= (-PLANE_HEIGTH/2 + PADDLE_HEIGTH/2)){
+        playerPaddle.position.y += -PaleDirX * paddleSpeed;
+      }
+    }
+
+
+    // Draw!
     renderer.render(scene, camera);
 
     // Schedule the next frame
