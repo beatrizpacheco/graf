@@ -38,16 +38,24 @@ const PADDLE_WIDTH = 10,
       PADDLE_DEPTH = 10,
       PADDLE_QUALITY = 1;
 
-var playerPaddleDirY = 0,
-    cpuPaddleDirY = 0,
+var playerPaddleDirY = 1,
+    cpuPaddleDirY = 1,
     paddleSpeed = 3,
-    PaleDirX = 1,
-    PaleDirY = 1;
+    constpaddleSpeed = 3;
 
 //mvto pelota
 var ballDirX = 1,
     ballDirY = 1,
-    ballSpeed = 2;
+    ballSpeed = 2,
+    constballSpeed = 2;
+
+//puntuaciones
+var score1 = 0,
+    score2 = 0,
+    maxScore = 3;
+
+// set opponent reaction rate (0 - easiest, 1 - hardest)
+var difficulty = 0.2;
 
 // GAME FUNCTIONS
 
@@ -84,12 +92,15 @@ function createScene()
 
     // Add the camera to the scene
     scene.add(camera);
-
+    //CAMARA.POSITION Y CAMARA.ROTATION
     // Start the renderer
     renderer.setSize(WIDTH, HEIGHT);
 
     // Attach the renderer-supplied DOM element.
     gameCanvas.appendChild(renderer.domElement); //añade webGL a pagina html
+
+    document.getElementById("winnerBoard").innerHTML = "First to " + maxScore + " wins!";
+    document.getElementById("scores").innerHTML = score1 + " - " + score2;
 }
 
 function addPlaneMesh()
@@ -188,30 +199,84 @@ function addLight()
     scene.add(pointLight);
 }
 
+function reiniciar(){
+
+  if(window.confirm("PERDISTE.. ¿Quieres volver a jugar?") == true){
+    score1 = 0;
+    score2 = 0;
+    document.getElementById("scores").innerHTML = score1 + " - " + score2;
+    ballSpeed = 2;
+  }else{
+    sphere.position.x = 0;
+    sphere.position.y = 0;
+    ballDirX = 0;
+    ballDirY = 0;
+  }
+
+}
+
 function draw()
 {
     //MOVER EL BALON
     sphere.position.x += ballDirX * ballSpeed;
-    if (sphere.position.x == PLANE_WIDTH/2 || sphere.position.x == -PLANE_WIDTH/2){
-      ballDirX = -ballDirX;
-    }
+      //CHOCAR PALA
+      if ((sphere.position.x <= playerPaddle.position.x  && (sphere.position.y <= playerPaddle.position.y +  PADDLE_HEIGTH/2 && sphere.position.y >= playerPaddle.position.y -  PADDLE_HEIGTH/2))||
+          (sphere.position.x >= cpuPaddle.position.x  && (sphere.position.y <= cpuPaddle.position.y +  PADDLE_HEIGTH/2 && sphere.position.y >= cpuPaddle.position.y -  PADDLE_HEIGTH/2))){
+        ballDirX = -ballDirX;
+        ballSpeed += 0.5; //AUMENTAR VELOCIDAD AL CHOCAR CON LA PALA
+        if (ballSpeed >= constballSpeed*2){
+          ballSpeed = constballSpeed*2
+        }
+      }
     sphere.position.y += ballDirY * ballSpeed;
-    if (sphere.position.y == PLANE_HEIGTH/2 || sphere.position.y == -PLANE_HEIGTH/2){
+    if (sphere.position.y >= PLANE_HEIGTH/2 || sphere.position.y <= -PLANE_HEIGTH/2){
       ballDirY = -ballDirY;
+      ballSpeed += 0.2; //AUMENTAR VELOCIDAD PELOTA AL CHOCAR PAREDES ARRIBA Y ABAJO
+      if (ballSpeed >= constballSpeed*2){
+        ballSpeed = constballSpeed*2
+      }
     }
 
-    //MOVER LA PALA
+    //MOVER PALA CPU
+    cpuPaddleDirY = (sphere.position.y - cpuPaddle.position.y)*difficulty;
+    cpuPaddle.position.y += cpuPaddleDirY * paddleSpeed;
+
+
+    //MOVER LA PALA JUGADOR
     if (Key.isDown(Key.A)){
       if (playerPaddle.position.y <= (PLANE_HEIGTH/2 - PADDLE_HEIGTH/2)){
-        playerPaddle.position.y += PaleDirX * paddleSpeed;
+        playerPaddle.position.y += playerPaddleDirY * paddleSpeed;
       }
     }
     if (Key.isDown(Key.D)){
       if (playerPaddle.position.y >= (-PLANE_HEIGTH/2 + PADDLE_HEIGTH/2)){
-        playerPaddle.position.y += -PaleDirX * paddleSpeed;
+        playerPaddle.position.y += -playerPaddleDirY * paddleSpeed;
       }
     }
 
+
+
+    //METER GOL
+    if (sphere.position.x >= PLANE_WIDTH/2){
+      sphere.position.x = 0;
+      ballDirX = -ballDirX;
+      score1 += 1;
+      document.getElementById("scores").innerHTML = score1 + " - " + score2;
+      ballSpeed = 2;//PARA VOLVER A PONER LA VELOCIDAD INICIAL
+      if (score1 == maxScore){
+        reiniciar();
+      }
+    }
+    if (sphere.position.x <= -PLANE_WIDTH/2){
+      sphere.position.x = 0;
+      ballDirX = -ballDirX;
+      score2 += 1;
+      document.getElementById("scores").innerHTML = score1 + " - " + score2;
+      ballSpeed = 2;//PARA VOLVER A PONER LA VELOCIDAD INICIAL
+      if (score2 == maxScore){
+        reiniciar();
+      }
+    }
 
     // Draw!
     renderer.render(scene, camera);
