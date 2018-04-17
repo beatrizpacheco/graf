@@ -217,6 +217,12 @@ function reiniciar(){
 
 function draw()
 {
+  // camera.position.z = playerPaddle.position.z - 80 ;
+  // camera.position.x = playerPaddle.position.x - 100;
+  // camera.rotation.y = Math.PI / 2;
+  // camera.rotation.x = Math.PI / 2;
+
+
     //MOVER EL BALON
     sphere.position.x += ballDirX * ballSpeed;
       //CHOCAR PALA
