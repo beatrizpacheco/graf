@@ -1,5 +1,3 @@
-//voy por el 8.4!!!!!!!!!!!!!!!!!!!!!! MOVER LA PALA DE LA CPU!!!!!!!!!!!!!!!!!!!!!!!!!
-
 // GLOBAL VARIABLES
 const WIDTH = 640,
       HEIGHT = 360;
@@ -137,7 +135,7 @@ function addSphereMesh()
     sphere = new THREE.Mesh(geometry, material);
 
     // Move the Sphere back in Z so we can see it
-    sphere.position.z = -300;
+    sphere.position.z = -296;
 
     // Finally, add the sphere to the scene
     scene.add(sphere);
@@ -217,11 +215,12 @@ function reiniciar(){
 
 function draw()
 {
-  // camera.position.z = playerPaddle.position.z - 80 ;
-  // camera.position.x = playerPaddle.position.x - 100;
-  // camera.rotation.y = Math.PI / 2;
-  // camera.rotation.x = Math.PI / 2;
-
+    //PERPECTIVA CÁMARA
+    camera.position.x = playerPaddle.position.x - 200;
+    camera.position.z = playerPaddle.position.z + 90;
+    camera.rotation.y = -Math.PI/2;
+    camera.rotation.z = -Math.PI/2;
+    camera.rotation.x = 0;
 
     //MOVER EL BALON
     sphere.position.x += ballDirX * ballSpeed;
@@ -259,9 +258,7 @@ function draw()
         playerPaddle.position.y += -playerPaddleDirY * paddleSpeed;
       }
     }
-
-
-
+    
     //METER GOL
     if (sphere.position.x >= PLANE_WIDTH/2){
       sphere.position.x = 0;
