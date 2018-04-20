@@ -50,10 +50,15 @@ var ballDirX = 1,
 //puntuaciones
 var score1 = 0,
     score2 = 0,
-    maxScore = 3;
+    maxScore = 3;//3
 
 // set opponent reaction rate (0 - easiest, 1 - hardest)
 var difficulty = 0.2;
+
+//columnas
+const COLUMN_WIDTH =  40,
+      COLUMN_HEIGHT =  20,
+      COLUMN_DEPTH = 30;
 
 // GAME FUNCTIONS
 
@@ -61,9 +66,11 @@ function setup()
 {
 	createScene();
     addPlaneMesh();
+    addFloorMesh();
     addSphereMesh(); //añade objeto
     addCubeMeshPlayer();
     addCubeMeshCPU();
+    addColumMeshRight();
     addLight(); //añade iluminacion
     requestAnimationFrame(draw); //dibujaaa
 }
@@ -114,10 +121,29 @@ function addPlaneMesh()
     plane = new THREE.Mesh(geometry, material);
 
     // Move the Sphere back in Z so we can see it
-    plane.position.z = -300;
+    plane.position.z = -302;
 
     // Finally, add the sphere to the scene
     scene.add(plane);
+
+}
+
+function addFloorMesh()
+{
+    var geometry = new THREE.PlaneGeometry(
+        PLANE_WIDTH +50,
+        PLANE_HEIGTH +60);
+    var material = new THREE.MeshLambertMaterial(
+      {
+        color: '#FF0000'
+      });
+    // Create a new mesh with sphere geometry
+    floor = new THREE.Mesh(geometry, material);
+
+    floor.position.z = -305;
+
+    // Finally, add the sphere to the scene
+    scene.add(floor);
 
 }
 
@@ -182,11 +208,54 @@ function addCubeMeshCPU(){
 
 }
 
+function addColumMeshRight(){
+  var geometry = new THREE.BoxGeometry(COLUMN_WIDTH, COLUMN_HEIGHT, COLUMN_DEPTH);
+  var material = new THREE.MeshLambertMaterial(
+      {
+        color: '#87CEEB'
+      });
+  columRight1 = new THREE.Mesh( geometry, material );
+  scene.add( columRight1 );
+  columRight1.position.z = -300;
+  columRight1.position.y = -120;
+  columRight1.position.x = -120;
+
+  columRight2 = new THREE.Mesh( geometry, material );
+  scene.add( columRight2 );
+  columRight2.position.z = -300;
+  columRight2.position.y = -120;
+  columRight2.position.x = 0;
+
+  columRight3 = new THREE.Mesh( geometry, material );
+  scene.add( columRight3 );
+  columRight3.position.z = -300;
+  columRight3.position.y = -120;
+  columRight3.position.x = 120;
+
+  columLEFT1 = new THREE.Mesh( geometry, material );
+  scene.add( columLEFT1 );
+  columLEFT1.position.z = -300;
+  columLEFT1.position.y = 120;
+  columLEFT1.position.x = 120;
+
+  columLEFT2 = new THREE.Mesh( geometry, material );
+  scene.add( columLEFT2 );
+  columLEFT2.position.z = -300;
+  columLEFT2.position.y = 120;
+  columLEFT2.position.x = 0;
+
+  columLEFT3 = new THREE.Mesh( geometry, material );
+  scene.add( columLEFT3 );
+  columLEFT3.position.z = -300;
+  columLEFT3.position.y = 120;
+  columLEFT3.position.x = -120;
+}
+
 function addLight()
 {
     // Create a point light
     pointLight =
-			new THREE.PointLight(0xffffff);
+			new THREE.DirectionalLight(0xffffff);
 
     // Set its position
     pointLight.position.x = 10;
@@ -195,11 +264,16 @@ function addLight()
 
     // Add to the scene
     scene.add(pointLight);
+
+
+    //Create a WebGLRenderer and turn on shadows in the renderer
+    // var renderer = new THREE.WebGLRenderer();
+    // renderer.shadowMap.enabled = true;
 }
 
-function reiniciar(){
+function reiniciar(message){
 
-  if(window.confirm("PERDISTE.. ¿Quieres volver a jugar?") == true){
+  if(window.confirm(message) == true){
     score1 = 0;
     score2 = 0;
     document.getElementById("scores").innerHTML = score1 + " - " + score2;
@@ -216,8 +290,8 @@ function reiniciar(){
 function draw()
 {
     //PERPECTIVA CÁMARA
-    camera.position.x = playerPaddle.position.x - 200;
-    camera.position.z = playerPaddle.position.z + 90;
+    camera.position.x = playerPaddle.position.x - 250;//200
+    camera.position.z = playerPaddle.position.z + 100;//
     camera.rotation.y = -Math.PI/2;
     camera.rotation.z = -Math.PI/2;
     camera.rotation.x = 0;
@@ -245,6 +319,8 @@ function draw()
     //MOVER PALA CPU
     cpuPaddleDirY = (sphere.position.y - cpuPaddle.position.y)*difficulty;
     cpuPaddle.position.y += cpuPaddleDirY * paddleSpeed;
+    //Falta controlar la velocidad de su pala
+
 
 
     //MOVER LA PALA JUGADOR
@@ -258,7 +334,7 @@ function draw()
         playerPaddle.position.y += -playerPaddleDirY * paddleSpeed;
       }
     }
-    
+
     //METER GOL
     if (sphere.position.x >= PLANE_WIDTH/2){
       sphere.position.x = 0;
@@ -267,7 +343,7 @@ function draw()
       document.getElementById("scores").innerHTML = score1 + " - " + score2;
       ballSpeed = 2;//PARA VOLVER A PONER LA VELOCIDAD INICIAL
       if (score1 == maxScore){
-        reiniciar();
+        reiniciar("GANASTE.. ¿Quieres volver a jugar?");
       }
     }
     if (sphere.position.x <= -PLANE_WIDTH/2){
@@ -277,7 +353,7 @@ function draw()
       document.getElementById("scores").innerHTML = score1 + " - " + score2;
       ballSpeed = 2;//PARA VOLVER A PONER LA VELOCIDAD INICIAL
       if (score2 == maxScore){
-        reiniciar();
+        reiniciar("PERDISTE.. ¿Quieres volver a jugar?");
       }
     }
 
