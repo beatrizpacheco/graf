@@ -65,13 +65,13 @@ const COLUMN_WIDTH =  40,
 function setup()
 {
 	createScene();
-    addPlaneMesh();
-    addFloorMesh();
-    addSphereMesh(); //añade objeto
-    addCubeMeshPlayer();
-    addCubeMeshCPU();
-    addColumMeshRight();
-    addLight(); //añade iluminacion
+    addPlaneMesh(); //campo de juego
+    addFloorMesh(); //suelo
+    addSphereMesh(); //balon
+    addCubeMeshPlayer(); //pala jugador
+    addCubeMeshCPU(); //pala cpu
+    addColumMesh(); //columnas
+    addLight(); //iluminacion (puntual y spot)
     requestAnimationFrame(draw); //dibujaaa
 }
 
@@ -126,6 +126,9 @@ function addPlaneMesh()
     // Finally, add the sphere to the scene
     scene.add(plane);
 
+    plane.receiveShadow = true;
+    plane.castShadow = true;
+
 }
 
 function addFloorMesh()
@@ -144,6 +147,9 @@ function addFloorMesh()
 
     // Finally, add the sphere to the scene
     scene.add(floor);
+
+    floor.receiveShadow = true;
+    floor.castShadow = true;
 
 }
 
@@ -166,6 +172,9 @@ function addSphereMesh()
     // Finally, add the sphere to the scene
     scene.add(sphere);
 
+    sphere.receiveShadow = true;
+    sphere.castShadow = true;
+
 }
 
 function addCubeMeshPlayer(){
@@ -185,6 +194,8 @@ function addCubeMeshPlayer(){
 
   // Finally, add the sphere to the scene
 	scene.add( playerPaddle ); //añado el cubo a la escena
+  playerPaddle.receiveShadow = true;
+  playerPaddle.castShadow = true;
 
 }
 
@@ -206,9 +217,12 @@ function addCubeMeshCPU(){
   // Finally, add the sphere to the scene
 	scene.add( cpuPaddle ); //añado el cubo a la escena
 
+  cpuPaddle.receiveShadow = true;
+  cpuPaddle.castShadow = true;
+
 }
 
-function addColumMeshRight(){
+function addColumMesh(){
   var geometry = new THREE.BoxGeometry(COLUMN_WIDTH, COLUMN_HEIGHT, COLUMN_DEPTH);
   var material = new THREE.MeshLambertMaterial(
       {
@@ -219,43 +233,56 @@ function addColumMeshRight(){
   columRight1.position.z = -300;
   columRight1.position.y = -120;
   columRight1.position.x = -120;
+  columRight1.receiveShadow = true;
+  columRight1.castShadow = true;
 
   columRight2 = new THREE.Mesh( geometry, material );
   scene.add( columRight2 );
   columRight2.position.z = -300;
   columRight2.position.y = -120;
   columRight2.position.x = 0;
+  columRight2.receiveShadow = true;
+  columRight2.castShadow = true;
 
   columRight3 = new THREE.Mesh( geometry, material );
   scene.add( columRight3 );
   columRight3.position.z = -300;
   columRight3.position.y = -120;
   columRight3.position.x = 120;
+  columRight3.receiveShadow = true;
+  columRight3.castShadow = true;
 
-  columLEFT1 = new THREE.Mesh( geometry, material );
-  scene.add( columLEFT1 );
-  columLEFT1.position.z = -300;
-  columLEFT1.position.y = 120;
-  columLEFT1.position.x = 120;
+  columLeft1 = new THREE.Mesh( geometry, material );
+  scene.add( columLeft1 );
+  columLeft1.position.z = -300;
+  columLeft1.position.y = 120;
+  columLeft1.position.x = 120;
+  columLeft1.receiveShadow = true;
+  columLeft1.castShadow = true;
 
-  columLEFT2 = new THREE.Mesh( geometry, material );
-  scene.add( columLEFT2 );
-  columLEFT2.position.z = -300;
-  columLEFT2.position.y = 120;
-  columLEFT2.position.x = 0;
+  columLeft2 = new THREE.Mesh( geometry, material );
+  scene.add( columLeft2 );
+  columLeft2.position.z = -300;
+  columLeft2.position.y = 120;
+  columLeft2.position.x = 0;
+  columLeft2.receiveShadow = true;
+  columLeft2.castShadow = true;
 
-  columLEFT3 = new THREE.Mesh( geometry, material );
-  scene.add( columLEFT3 );
-  columLEFT3.position.z = -300;
-  columLEFT3.position.y = 120;
-  columLEFT3.position.x = -120;
+  columLeft3 = new THREE.Mesh( geometry, material );
+  scene.add( columLeft3 );
+  columLeft3.position.z = -300;
+  columLeft3.position.y = 120;
+  columLeft3.position.x = -120;
+  columLeft3.receiveShadow = true;
+  columLeft3.castShadow = true;
+
 }
 
 function addLight()
 {
     // Create a point light
     pointLight =
-			new THREE.DirectionalLight(0xffffff);
+			new THREE.PointLight(0xffffff);
 
     // Set its position
     pointLight.position.x = 10;
@@ -265,10 +292,16 @@ function addLight()
     // Add to the scene
     scene.add(pointLight);
 
+    // add a spot light
+    // this is important for casting shadows
+    spotLight = new THREE.SpotLight(0xffffff);
+    spotLight.position.set(0, 0, 460);
+    spotLight.intensity = 1.5;
+    spotLight.castShadow = true;
+    scene.add(spotLight);
 
     //Create a WebGLRenderer and turn on shadows in the renderer
-    // var renderer = new THREE.WebGLRenderer();
-    // renderer.shadowMap.enabled = true;
+    renderer.shadowMap.enabled = true;
 }
 
 function reiniciar(message){
@@ -299,7 +332,7 @@ function draw()
     //MOVER EL BALON
     sphere.position.x += ballDirX * ballSpeed;
       //CHOCAR PALA
-      if ((sphere.position.x <= playerPaddle.position.x  && (sphere.position.y <= playerPaddle.position.y +  PADDLE_HEIGTH/2 && sphere.position.y >= playerPaddle.position.y -  PADDLE_HEIGTH/2))||
+      if ((sphere.position.x <= playerPaddle.position.x  + PADDLE_WIDTH && (sphere.position.y <= playerPaddle.position.y +  PADDLE_HEIGTH/2 && sphere.position.y >= playerPaddle.position.y -  PADDLE_HEIGTH/2))||
           (sphere.position.x >= cpuPaddle.position.x  && (sphere.position.y <= cpuPaddle.position.y +  PADDLE_HEIGTH/2 && sphere.position.y >= cpuPaddle.position.y -  PADDLE_HEIGTH/2))){
         ballDirX = -ballDirX;
         ballSpeed += 0.5; //AUMENTAR VELOCIDAD AL CHOCAR CON LA PALA
@@ -319,7 +352,21 @@ function draw()
     //MOVER PALA CPU
     cpuPaddleDirY = (sphere.position.y - cpuPaddle.position.y)*difficulty;
     cpuPaddle.position.y += cpuPaddleDirY * paddleSpeed;
+
     //Falta controlar la velocidad de su pala
+    // if (Math.abs(cpuPaddleDirY) <= 2*paddleSpeed)
+    // {
+    //     cpuPaddle.position.y += cpuPaddleDirY * paddleSpeed;
+    // }else
+    // {// if the lerp value is too high, we have to limit speed to paddleSpeed
+    //     if (cpuPaddleDirY > 2*paddleSpeed)
+    //     { // if paddle is lerping in +ve direction
+    //   		 cpuPaddle.position.y += paddleSpeed;
+    //   	}else if (cpuPaddleDirY < -2*paddleSpeed)
+    //     { // if paddle is lerping in -ve direction
+    // 		   cpuPaddle.position.y -= paddleSpeed;
+    // 	  }
+    // }
 
 
 
@@ -356,6 +403,10 @@ function draw()
         reiniciar("PERDISTE.. ¿Quieres volver a jugar?");
       }
     }
+
+    //MOVER LA LUZ QUE SIGUE LA pelota
+    spotLight.position.x = sphere.position.x;
+    spotLight.position.y = sphere.position.y;
 
     // Draw!
     renderer.render(scene, camera);
