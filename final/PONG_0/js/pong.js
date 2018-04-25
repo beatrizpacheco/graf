@@ -11,7 +11,7 @@ const NEAR = 0.1;
 const FAR = 10000;
 
 // Scene object variables
-var renderer, scene, camera, pointLight;
+var renderer, scene, camera, pointLight, spotLight;
 
 // Set up the sphere vars
 const RADIUS = 5,
@@ -38,8 +38,7 @@ const PADDLE_WIDTH = 10,
 
 var playerPaddleDirY = 1,
     cpuPaddleDirY = 1,
-    paddleSpeed = 3,
-    constpaddleSpeed = 3;
+    paddleSpeed = 3;
 
 //mvto pelota
 var ballDirX = 1,
@@ -53,12 +52,13 @@ var score1 = 0,
     maxScore = 3;//3
 
 // set opponent reaction rate (0 - easiest, 1 - hardest)
-var difficulty = 0.2;
+//var difficulty = 0.2;
+var difficulty = 0;
 
 //columnas
-const COLUMN_WIDTH =  40,
+const COLUMN_WIDTH =  20,
       COLUMN_HEIGHT =  20,
-      COLUMN_DEPTH = 30;
+      COLUMN_DEPTH = 120;
 
 // GAME FUNCTIONS
 
@@ -92,12 +92,11 @@ function createScene()
             FAR
         );
 
-
     scene = new THREE.Scene();
 
     // Add the camera to the scene
     scene.add(camera);
-    //CAMARA.POSITION Y CAMARA.ROTATION
+
     // Start the renderer
     renderer.setSize(WIDTH, HEIGHT);
 
@@ -106,6 +105,9 @@ function createScene()
 
     document.getElementById("winnerBoard").innerHTML = "First to " + maxScore + " wins!";
     document.getElementById("scores").innerHTML = score1 + " - " + score2;
+
+    difficulty = prompt("Choose the dificult of game", "(0 - easiest, 10 - hardest)");
+    difficulty = 0.1*difficulty;
 }
 
 function addPlaneMesh()
@@ -113,19 +115,21 @@ function addPlaneMesh()
     var geometry = new THREE.PlaneGeometry(
         PLANE_WIDTH,
         PLANE_HEIGTH );
-    var material = new THREE.MeshLambertMaterial(
-      {
-        color: '#F8F8FF'
-      });
+
+    var textura = new THREE.TextureLoader().load('js/pista.jpg');
+    //textura.wrapS = textura.wrapT = THREE.RepeatWrapping;
+    //textura.repeat.set (5,5);
+    var material = new THREE.MeshBasicMaterial({map:textura});
+    // var material = new THREE.MeshLambertMaterial({color: '#F8F8FF'});
+
     // Create a new mesh with sphere geometry
     plane = new THREE.Mesh(geometry, material);
 
     // Move the Sphere back in Z so we can see it
     plane.position.z = -302;
 
-    // Finally, add the sphere to the scene
+    // Finally, add the sphere to the scene and shadows
     scene.add(plane);
-
     plane.receiveShadow = true;
     plane.castShadow = true;
 
@@ -135,19 +139,23 @@ function addFloorMesh()
 {
     var geometry = new THREE.PlaneGeometry(
         PLANE_WIDTH +50,
-        PLANE_HEIGTH +60);
-    var material = new THREE.MeshLambertMaterial(
-      {
-        color: '#FF0000'
-      });
+        PLANE_HEIGTH +260);
+    var textura = new THREE.TextureLoader().load('js/cesped.jpg');
+    textura.wrapS = textura.wrapT = THREE.RepeatWrapping;
+    textura.repeat.set (5,5);
+    var material = new THREE.MeshBasicMaterial({map:textura});
+
+    // var material = new THREE.MeshLambertMaterial(
+    //   {
+    //     color: '#FF0000'
+    //   });
     // Create a new mesh with sphere geometry
     floor = new THREE.Mesh(geometry, material);
 
     floor.position.z = -305;
 
-    // Finally, add the sphere to the scene
+    // Finally, add the sphere to the scene and shadows
     scene.add(floor);
-
     floor.receiveShadow = true;
     floor.castShadow = true;
 
@@ -159,19 +167,22 @@ function addSphereMesh()
         RADIUS,
         SEGMENTS,
         RINGS);
-    var material = new THREE.MeshLambertMaterial(
-      {
-        color: '#00FF00'
-      });
+    var textura = new THREE.TextureLoader().load('js/pelota.jpg');
+    //textura.wrapS = textura.wrapT = THREE.RepeatWrapping;
+    //textura.repeat.set (5,5);
+    var material = new THREE.MeshBasicMaterial({map:textura});
+    // var material = new THREE.MeshLambertMaterial(
+    //   {
+    //     color: '#00FF00'
+    //   });
     // Create a new mesh with sphere geometry
     sphere = new THREE.Mesh(geometry, material);
 
     // Move the Sphere back in Z so we can see it
     sphere.position.z = -296;
 
-    // Finally, add the sphere to the scene
+    // Finally, add the sphere to the scene and shadows
     scene.add(sphere);
-
     sphere.receiveShadow = true;
     sphere.castShadow = true;
 
@@ -192,11 +203,17 @@ function addCubeMeshPlayer(){
 	playerPaddle.position.z = -300;
 	playerPaddle.position.x = -190;
 
-  // Finally, add the sphere to the scene
-	scene.add( playerPaddle ); //añado el cubo a la escena
+  // Finally, add the sphere to the scene and shadows
+	scene.add( playerPaddle );
   playerPaddle.receiveShadow = true;
   playerPaddle.castShadow = true;
 
+  //POSICION DE LA CAMARA RESPECTO DE LA PALA DEL JUGADOR
+  camera.position.x = playerPaddle.position.x - 250;//200
+  camera.position.z = playerPaddle.position.z + 100;//
+  camera.rotation.y = -Math.PI/2;
+  camera.rotation.z = -Math.PI/2;
+  camera.rotation.x = 0;
 }
 
 function addCubeMeshCPU(){
@@ -206,7 +223,7 @@ function addCubeMeshCPU(){
       PADDLE_DEPTH);
 	var material = new THREE.MeshLambertMaterial(
     {
-      color: '#FF0000'
+      color: '#FFFF00'
     });
 	cpuPaddle = new THREE.Mesh( geometry, material ); //crea el cubo
 
@@ -214,9 +231,8 @@ function addCubeMeshCPU(){
 	cpuPaddle.position.z = -300;
 	cpuPaddle.position.x = 190;
 
-  // Finally, add the sphere to the scene
-	scene.add( cpuPaddle ); //añado el cubo a la escena
-
+  // Finally, add the sphere to the scene and shadows
+	scene.add( cpuPaddle );
   cpuPaddle.receiveShadow = true;
   cpuPaddle.castShadow = true;
 
@@ -224,6 +240,10 @@ function addCubeMeshCPU(){
 
 function addColumMesh(){
   var geometry = new THREE.BoxGeometry(COLUMN_WIDTH, COLUMN_HEIGHT, COLUMN_DEPTH);
+  // var textura = new THREE.TextureLoader().load('js/brick001.jpg');
+  // textura.wrapS = textura.wrapT = THREE.RepeatWrapping;
+  // textura.repeat.set (5,5);
+  // var material = new THREE.MeshBasicMaterial({map:textura});
   var material = new THREE.MeshLambertMaterial(
       {
         color: '#87CEEB'
@@ -275,7 +295,6 @@ function addColumMesh(){
   columLeft3.position.x = -120;
   columLeft3.receiveShadow = true;
   columLeft3.castShadow = true;
-
 }
 
 function addLight()
@@ -292,12 +311,16 @@ function addLight()
     // Add to the scene
     scene.add(pointLight);
 
-    // add a spot light
-    // this is important for casting shadows
-    spotLight = new THREE.SpotLight(0xffffff);
-    spotLight.position.set(0, 0, 460);
+    // Create a spot light
+    spotLight =
+			new THREE.SpotLight(0xF8D898);
+
+    // Set its position and attributes
+    spotLight.position.set(0, 0, 200);
     spotLight.intensity = 1.5;
     spotLight.castShadow = true;
+
+    // Add to the scene
     scene.add(spotLight);
 
     //Create a WebGLRenderer and turn on shadows in the renderer
@@ -320,56 +343,52 @@ function reiniciar(message){
 
 }
 
-function draw()
-{
-    //PERPECTIVA CÁMARA
-    camera.position.x = playerPaddle.position.x - 250;//200
-    camera.position.z = playerPaddle.position.z + 100;//
-    camera.rotation.y = -Math.PI/2;
-    camera.rotation.z = -Math.PI/2;
-    camera.rotation.x = 0;
-
-    //MOVER EL BALON
-    sphere.position.x += ballDirX * ballSpeed;
-      //CHOCAR PALA
-      if ((sphere.position.x <= playerPaddle.position.x  + PADDLE_WIDTH && (sphere.position.y <= playerPaddle.position.y +  PADDLE_HEIGTH/2 && sphere.position.y >= playerPaddle.position.y -  PADDLE_HEIGTH/2))||
-          (sphere.position.x >= cpuPaddle.position.x  && (sphere.position.y <= cpuPaddle.position.y +  PADDLE_HEIGTH/2 && sphere.position.y >= cpuPaddle.position.y -  PADDLE_HEIGTH/2))){
-        ballDirX = -ballDirX;
-        ballSpeed += 0.5; //AUMENTAR VELOCIDAD AL CHOCAR CON LA PALA
-        if (ballSpeed >= constballSpeed*2){
-          ballSpeed = constballSpeed*2
-        }
-      }
-    sphere.position.y += ballDirY * ballSpeed;
-    if (sphere.position.y >= PLANE_HEIGTH/2 || sphere.position.y <= -PLANE_HEIGTH/2){
-      ballDirY = -ballDirY;
-      ballSpeed += 0.2; //AUMENTAR VELOCIDAD PELOTA AL CHOCAR PAREDES ARRIBA Y ABAJO
+function movSphere(){
+  //MOVER EL BALON
+  sphere.position.x += ballDirX * ballSpeed;
+    //CHOCAR PALA
+    if ((sphere.position.x <= playerPaddle.position.x  && (sphere.position.y <= playerPaddle.position.y +  PADDLE_HEIGTH/2 && sphere.position.y >= playerPaddle.position.y -  PADDLE_HEIGTH/2))||
+        (sphere.position.x >= cpuPaddle.position.x  && (sphere.position.y <= cpuPaddle.position.y +  PADDLE_HEIGTH/2 && sphere.position.y >= cpuPaddle.position.y -  PADDLE_HEIGTH/2))){
+      ballDirX = -ballDirX;
+      ballSpeed += 0.5; //AUMENTAR VELOCIDAD AL CHOCAR CON LA PALA
       if (ballSpeed >= constballSpeed*2){
         ballSpeed = constballSpeed*2
       }
     }
+  sphere.position.y += ballDirY * ballSpeed;
+  if (sphere.position.y >= PLANE_HEIGTH/2 || sphere.position.y <= -PLANE_HEIGTH/2){
+    ballDirY = -ballDirY;
+    ballSpeed += 0.2; //AUMENTAR VELOCIDAD PELOTA AL CHOCAR PAREDES ARRIBA Y ABAJO
+    if (ballSpeed >= constballSpeed*2){
+      ballSpeed = constballSpeed*2
+    }
+  }
+}
 
-    //MOVER PALA CPU
-    cpuPaddleDirY = (sphere.position.y - cpuPaddle.position.y)*difficulty;
-    cpuPaddle.position.y += cpuPaddleDirY * paddleSpeed;
+function movLightSpot(){
+  //SEGUIR LA BOLA CON LA LUZ
+  spotLight.position.x = -sphere.position.x;
+  spotLight.position.y = -sphere.position.y;
+}
 
-    //Falta controlar la velocidad de su pala
-    // if (Math.abs(cpuPaddleDirY) <= 2*paddleSpeed)
-    // {
-    //     cpuPaddle.position.y += cpuPaddleDirY * paddleSpeed;
-    // }else
-    // {// if the lerp value is too high, we have to limit speed to paddleSpeed
-    //     if (cpuPaddleDirY > 2*paddleSpeed)
-    //     { // if paddle is lerping in +ve direction
-    //   		 cpuPaddle.position.y += paddleSpeed;
-    //   	}else if (cpuPaddleDirY < -2*paddleSpeed)
-    //     { // if paddle is lerping in -ve direction
-    // 		   cpuPaddle.position.y -= paddleSpeed;
-    // 	  }
-    // }
+function movCPU(){
+  //MOVER PALA CPU
+  cpuPaddleDirY = (sphere.position.y - cpuPaddle.position.y)*difficulty;
+  //cpuPaddle.position.y += cpuPaddleDirY * paddleSpeed;
 
+  // control de la velocidad
+  if (Math.abs(cpuPaddleDirY) <= paddleSpeed){
+      cpuPaddle.position.y += cpuPaddleDirY;
+  }else{
+  	if (cpuPaddleDirY > paddleSpeed){
+  		cpuPaddle.position.y += paddleSpeed;
+  	}else if (cpuPaddleDirY < -paddleSpeed){
+  		cpuPaddle.position.y -= paddleSpeed;
+  	}
+  }
+}
 
-
+function movPlayer(){
     //MOVER LA PALA JUGADOR
     if (Key.isDown(Key.A)){
       if (playerPaddle.position.y <= (PLANE_HEIGTH/2 - PADDLE_HEIGTH/2)){
@@ -381,32 +400,49 @@ function draw()
         playerPaddle.position.y += -playerPaddleDirY * paddleSpeed;
       }
     }
+}
 
-    //METER GOL
-    if (sphere.position.x >= PLANE_WIDTH/2){
-      sphere.position.x = 0;
-      ballDirX = -ballDirX;
-      score1 += 1;
-      document.getElementById("scores").innerHTML = score1 + " - " + score2;
-      ballSpeed = 2;//PARA VOLVER A PONER LA VELOCIDAD INICIAL
-      if (score1 == maxScore){
-        reiniciar("GANASTE.. ¿Quieres volver a jugar?");
-      }
+function goal(){
+  //METER GOL
+  if (sphere.position.x >= PLANE_WIDTH/2){
+    sphere.position.x = 0;
+    ballDirX = -ballDirX;
+    score1 += 1;
+    document.getElementById("scores").innerHTML = score1 + " - " + score2;
+    ballSpeed = 2;//PARA VOLVER A PONER LA VELOCIDAD INICIAL
+    if (score1 == maxScore){
+      reiniciar("GANASTE.. ¿Quieres volver a jugar?");
     }
-    if (sphere.position.x <= -PLANE_WIDTH/2){
-      sphere.position.x = 0;
-      ballDirX = -ballDirX;
-      score2 += 1;
-      document.getElementById("scores").innerHTML = score1 + " - " + score2;
-      ballSpeed = 2;//PARA VOLVER A PONER LA VELOCIDAD INICIAL
-      if (score2 == maxScore){
-        reiniciar("PERDISTE.. ¿Quieres volver a jugar?");
-      }
+  }
+  if (sphere.position.x <= -PLANE_WIDTH/2){
+    sphere.position.x = 0;
+    ballDirX = -ballDirX;
+    score2 += 1;
+    document.getElementById("scores").innerHTML = score1 + " - " + score2;
+    ballSpeed = 2;//PARA VOLVER A PONER LA VELOCIDAD INICIAL
+    if (score2 == maxScore){
+      reiniciar("PERDISTE.. ¿Quieres volver a jugar?");
     }
+  }
+}
 
-    //MOVER LA LUZ QUE SIGUE LA pelota
-    spotLight.position.x = sphere.position.x;
-    spotLight.position.y = sphere.position.y;
+function chooseDif(){
+  if (parseInt(difficulty) == NaN){
+    alert("Choose a number!");
+    difficulty = prompt("Choose the dificult of game", "(0 - easiest, 10 - hardest)");
+    difficulty = 0.1*difficulty;
+  }
+}
+function draw()
+{
+
+    chooseDif(); //elegir dificultad de la cpu
+
+    movSphere(); //mover el balon
+    movLightSpot(); //luz spot que sigue al balon
+    movCPU(); //pala cpu
+    movPlayer(); //pala player
+    goal(); //gol??
 
     // Draw!
     renderer.render(scene, camera);
