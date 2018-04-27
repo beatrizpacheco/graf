@@ -346,6 +346,8 @@ function reiniciar(message){
 function movSphere(){
   //MOVER EL BALON
   sphere.position.x += ballDirX * ballSpeed;
+  sphere.rotation.x += Math.sin(0.5);
+  sphere.rotation.y += Math.cos(0.5);
     //CHOCAR PALA
     if ((sphere.position.x <= playerPaddle.position.x  && (sphere.position.y <= playerPaddle.position.y +  PADDLE_HEIGTH/2 && sphere.position.y >= playerPaddle.position.y -  PADDLE_HEIGTH/2))||
         (sphere.position.x >= cpuPaddle.position.x  && (sphere.position.y <= cpuPaddle.position.y +  PADDLE_HEIGTH/2 && sphere.position.y >= cpuPaddle.position.y -  PADDLE_HEIGTH/2))){
