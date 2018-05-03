@@ -1,0 +1,195 @@
+<!doctype html>
+<html>
+<head>
+    <title>02 CLICK COLORS POINTS, by LEYREEE</title>
+    <style>
+        body {
+            background-color: grey;
+        }
+
+        canvas {
+            background-color: white;
+        }
+    </style>
+    <script id="shader-vs" type="x-shader/x-vertex">
+        attribute vec3 aVertexPosition;
+        void main(void) {
+        gl_Position = vec4(aVertexPosition, 1.0);
+        //NEW: TAMAÑO del POINT:
+        gl_PointSize = 10.0;
+        }
+    </script>
+    <script id="shader-fs" type="x-shader/x-fragment">
+        //NEW:
+        precision mediump float;
+        uniform vec4 uFragColor;
+
+        void main(void) {
+        //gl_FragColor = vec4(0.0, 0.5, 1.0, 0.5);
+        gl_FragColor = uFragColor;
+        }
+    </script>
+    <script>
+        var gl = null,
+        canvas = null,
+        glProgram = null,
+        fragmentShader = null,
+        vertexShader = null;
+        var vertexPositionAttribute = null;
+        //trianglesVerticeBuffer = null;
+
+        //NEW:
+        var mouseClickPoints = []; //ARRAY for MOUSE PRESS
+        var mouseClickColors = []; //ARRAY for MOUSE COLOR PRESS
+        //var PointsBuffer = null; NO NECESITAMOS BUFFERS!!
+        var xy = null;
+        var rgba = null;
+
+        function initWebGL() {
+            canvas = document.getElementById("my-canvas");
+            try {
+                //CREACION del OBJETO en 3D:
+                gl = canvas.getContext("webgl") ||
+                canvas.getContext("experimental-webgl");
+            } catch (e) {
+            }
+            if (gl) {
+                setupWebGL();
+                initShaders();
+                //NUEVA:
+                registerEventHandler();
+                //setupBuffers();
+                //drawScene();
+            } else {
+                alert("Error: Your browser does not appear to support WebGL.");
+            }
+        }
+        function setupWebGL() {
+            //set the clear color to a shade of green
+            gl.clearColor(1.0, 1.0, 1.0, 1.0);
+            gl.clear(gl.COLOR_BUFFER_BIT);
+        }
+        function initShaders() {
+            //get shader source
+            var fs_source = document.getElementById('shader-fs').innerHTML,
+             vs_source = document.getElementById('shader-vs').innerHTML;
+            //compile shaders
+            vertexShader = makeShader(vs_source, gl.VERTEX_SHADER);
+            fragmentShader = makeShader(fs_source, gl.FRAGMENT_SHADER);
+            //create program
+            glProgram = gl.createProgram();
+            //attach and link shaders to the program
+            gl.attachShader(glProgram, vertexShader);
+            gl.attachShader(glProgram, fragmentShader);
+            gl.linkProgram(glProgram);
+            if (!gl.getProgramParameter(glProgram, gl.LINK_STATUS)) {
+                alert("Unable to initialize the shader program.");
+            }
+            //use program
+            gl.useProgram(glProgram);
+        }
+
+        // ¡NEW and VERY IMPORTANT, DARLING!
+        function registerEventHandler(){
+          //NEW: returns the location of a UNIFORM VARIABLE:
+          fragColorAttribute = gl.getUniformLocation(glProgram, "uFragColor");
+          //Devuelve la UBICACION de la VARIABLE aVertexPosition:
+          vertexPositionAttribute = gl.getAttribLocation(glProgram, "aVertexPosition");
+
+          //Devuelve la MATRIZ (de ATRIBUTOS) de VERTICES (aVertexPosition) en el INDICE vertexPositionAttribute:
+          //gl.enableVertexAttribArray(vertexPositionAttribute);
+
+          //Register function (event handler) to be called on a mouse press:
+          canvas.onmousedown = function(ev){click(ev, gl, canvas, vertexPositionAttribute, fragColorAttribute);};
+        }
+
+        function makeShader(src, type) {
+            //compile the vertex shader
+            var shader = gl.createShader(type);
+            gl.shaderSource(shader, src);
+            gl.compileShader(shader);
+            if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+                alert("Error compiling shader: " + gl.getShaderInfoLog(shader));
+            }
+            return shader;
+        }
+        /* A los SHADERS se les pasa la INFO por cada VERTICE, por lo que FUERA BUFFERS!:
+        function setupBuffers() {
+            //trianglesVerticeBuffer = gl.createBuffer();
+            PointsBuffer = gl.createBuffer();
+            //BUFFER de ENLACE: vincula WebGL con los PUNTOS:
+            gl.bindBuffer(gl.ARRAY_BUFFER, PointsBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(mouseClickPoints), gl.STATIC_DRAW);
+        }
+
+        */
+
+        /* ¡DESAPARECE porque PINTAMOS AL CLICK!
+        function drawScene() {
+            // NEEDED!! Por eso, pasamos estas dos al registerEventHandler:
+            vertexPositionAttribute = gl.getAttribLocation(glProgram, "aVertexPosition");
+            gl.enableVertexAttribArray(vertexPositionAttribute);
+
+            //NEEDED! Parte de dibujar que añadimos a la FUNCION CLICK!:
+            gl.bindBuffer(gl.ARRAY_BUFFER, trianglesVerticeBuffer);
+            gl.vertexAttribPointer(vertexPositionAttribute, 3, gl.FLOAT, false, 0, 0);
+            gl.drawArrays(gl.TRIANGLES, 0, 6);
+        }
+        */
+
+        function click(ev, gl, canvas, vertexPositionAttribute){
+          var x = ev.clientX; // x coordinate of a mouse pointer
+          var y = ev.clientY; // y coordinate of a mouse pointer
+          var z = 0.0;
+
+          //Devuelve TAMAÑO y POSICION respecto a la VENTANA de VISUALIZACION:
+          var rect = ev.target.getBoundingClientRect();
+
+          x = ((x -rect.left) - canvas.height/2)/(canvas.height/2);
+          y = (canvas.width/2 - (y - rect.top))/(canvas.width/2);
+
+          //Store he coordinates:
+          mouseClickPoints.push([x,y,z]);
+
+          //Store the color: NEW!
+          if (x >= 0.0 && y >= 0.0) { // First quadrant
+                mouseClickColors.push([1.0, 1.0, 0.0, 0.5]); // YELLOW
+          } else if  (x < 0.0 && y < 0.0) { // Third quadrant
+                mouseClickColors.push([0.0, 1.0, 0.0, 0.5]); // GREEN
+          } else {
+                mouseClickColors.push([1.0, 0.0, 1.0, 0.5]); // PURPLE
+          }
+
+          //Clear <canvas>:
+          gl.clear(gl.COLOR_BUFFER_BIT);
+
+          //NEW:
+          var len = mouseClickPoints.length;
+
+          for (var i = 0; i < len; i++){
+                  var xy = mouseClickPoints[i];
+                  var rgba = mouseClickColors[i];
+
+            //CODIGO para DIBUJAR ------> SIN BUFFERS!:
+            //gl.bindBuffer(gl.ARRAY_BUFFER, PointsBuffer);
+            //gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(mouseClickPoints), gl.STATIC_DRAW);
+
+            //Especifica valoes CONSTANTES para atrib. de VERTICES GENERICOS:
+            gl.vertexAttrib3f(vertexPositionAttribute, xy[0], xy[1], xy[2]);
+            //En vez de:
+            //gl.vertexAttribPointer(vertexPositionAttribute, 3, gl.FLOAT, false, 0, 0);
+
+            // Pass the color of a point to uFragColor variable; specify values of uniform variables:
+            gl.uniform4f(fragColorAttribute, rgba[0], rgba[1], rgba[2], rgba[3]);
+            //Queremos dibujar PUNTOS:
+            gl.drawArrays(gl.POINTS, 0, 1);
+          }
+        }
+    </script>
+</head>
+<body onload="initWebGL()">
+    <canvas id="my-canvas" width="400" height="400">
+        Your browser does not support the HTML5 canvas element.
+    </canvas>
+</body>
+</html>
