@@ -60,6 +60,12 @@ const COLUMN_WIDTH =  20,
       COLUMN_HEIGHT =  20,
       COLUMN_DEPTH = 120;
 
+//sonidos ganar o perder
+var soundWin;
+var soundLose;
+var soundf;
+
+
 // GAME FUNCTIONS
 
 function setup()
@@ -72,8 +78,28 @@ function setup()
     addCubeMeshCPU(); //pala cpu
     addColumMesh(); //columnas
     addLight(); //iluminacion (puntual y spot)
+    soundf = new Sound("fondo.mp3");
+    soundf.play();
     requestAnimationFrame(draw); //dibujaaa
 }
+
+function Sound(src) {
+    this.Sound = document.createElement("audio");
+    // this.Sound.src = src;
+    this.Sound.setAttribute('src', src);
+    // this.Sound.setAttribute("preload", "auto");
+    // this.Sound.setAttribute("controls", "none");
+    this.Sound.setAttribute('autoplay', 'autoplay');
+    // this.Sound.style.display = "none";
+    document.body.appendChild(this.Sound);
+    this.play = function(){
+        this.Sound.play();
+    }
+    this.stop = function(){
+        this.Sound.pause();
+    }
+}
+
 
 function createScene()
 {
@@ -117,10 +143,7 @@ function addPlaneMesh()
         PLANE_HEIGTH );
 
     var textura = new THREE.TextureLoader().load('js/pista.jpg');
-    //textura.wrapS = textura.wrapT = THREE.RepeatWrapping;
-    //textura.repeat.set (5,5);
     var material = new THREE.MeshBasicMaterial({map:textura});
-    // var material = new THREE.MeshLambertMaterial({color: '#F8F8FF'});
 
     // Create a new mesh with sphere geometry
     plane = new THREE.Mesh(geometry, material);
@@ -145,10 +168,6 @@ function addFloorMesh()
     textura.repeat.set (5,5);
     var material = new THREE.MeshBasicMaterial({map:textura});
 
-    // var material = new THREE.MeshLambertMaterial(
-    //   {
-    //     color: '#FF0000'
-    //   });
     // Create a new mesh with sphere geometry
     floor = new THREE.Mesh(geometry, material);
 
@@ -168,13 +187,8 @@ function addSphereMesh()
         SEGMENTS,
         RINGS);
     var textura = new THREE.TextureLoader().load('js/pelota.jpg');
-    //textura.wrapS = textura.wrapT = THREE.RepeatWrapping;
-    //textura.repeat.set (5,5);
     var material = new THREE.MeshBasicMaterial({map:textura});
-    // var material = new THREE.MeshLambertMaterial(
-    //   {
-    //     color: '#00FF00'
-    //   });
+
     // Create a new mesh with sphere geometry
     sphere = new THREE.Mesh(geometry, material);
 
@@ -200,7 +214,7 @@ function addCubeMeshPlayer(){
 	playerPaddle = new THREE.Mesh( geometry, material ); //crea el cubo
 
   // Move the Sphere back in Z so we can see it
-	playerPaddle.position.z = -300;
+	playerPaddle.position.z = -296;
 	playerPaddle.position.x = -190;
 
   // Finally, add the sphere to the scene and shadows
@@ -228,7 +242,7 @@ function addCubeMeshCPU(){
 	cpuPaddle = new THREE.Mesh( geometry, material ); //crea el cubo
 
   // Move the Sphere back in Z so we can see it
-	cpuPaddle.position.z = -300;
+	cpuPaddle.position.z = -296;
 	cpuPaddle.position.x = 190;
 
   // Finally, add the sphere to the scene and shadows
@@ -239,62 +253,51 @@ function addCubeMeshCPU(){
 }
 
 function addColumMesh(){
+
   var geometry = new THREE.BoxGeometry(COLUMN_WIDTH, COLUMN_HEIGHT, COLUMN_DEPTH);
-  // var textura = new THREE.TextureLoader().load('js/brick001.jpg');
-  // textura.wrapS = textura.wrapT = THREE.RepeatWrapping;
-  // textura.repeat.set (5,5);
-  // var material = new THREE.MeshBasicMaterial({map:textura});
   var material = new THREE.MeshLambertMaterial(
       {
         color: '#87CEEB'
       });
-  columRight1 = new THREE.Mesh( geometry, material );
-  scene.add( columRight1 );
+
+  columRight1 = new THREE.Mesh(geometry, material);
+  columRight2 = new THREE.Mesh(geometry, material);
+  columRight3 = new THREE.Mesh(geometry, material);
+  columLeft1 = new THREE.Mesh(geometry, material);
+  columLeft2 = new THREE.Mesh(geometry, material);
+  columLeft3 = new THREE.Mesh(geometry, material);
+  columnas = [columRight1, columRight2, columRight3, columLeft1, columLeft2, columLeft3];
+
+  for (col in columnas){
+    scene.add( columnas[col] );
+    columnas[col].castShadow = true;
+    columnas[col].recieveShadow = true;
+  }
+
   columRight1.position.z = -300;
   columRight1.position.y = -120;
   columRight1.position.x = -120;
-  columRight1.receiveShadow = true;
-  columRight1.castShadow = true;
 
-  columRight2 = new THREE.Mesh( geometry, material );
-  scene.add( columRight2 );
   columRight2.position.z = -300;
   columRight2.position.y = -120;
   columRight2.position.x = 0;
-  columRight2.receiveShadow = true;
-  columRight2.castShadow = true;
 
-  columRight3 = new THREE.Mesh( geometry, material );
-  scene.add( columRight3 );
   columRight3.position.z = -300;
   columRight3.position.y = -120;
   columRight3.position.x = 120;
-  columRight3.receiveShadow = true;
-  columRight3.castShadow = true;
 
-  columLeft1 = new THREE.Mesh( geometry, material );
-  scene.add( columLeft1 );
   columLeft1.position.z = -300;
   columLeft1.position.y = 120;
   columLeft1.position.x = 120;
-  columLeft1.receiveShadow = true;
-  columLeft1.castShadow = true;
 
-  columLeft2 = new THREE.Mesh( geometry, material );
-  scene.add( columLeft2 );
   columLeft2.position.z = -300;
   columLeft2.position.y = 120;
   columLeft2.position.x = 0;
-  columLeft2.receiveShadow = true;
-  columLeft2.castShadow = true;
 
-  columLeft3 = new THREE.Mesh( geometry, material );
-  scene.add( columLeft3 );
   columLeft3.position.z = -300;
   columLeft3.position.y = 120;
   columLeft3.position.x = -120;
-  columLeft3.receiveShadow = true;
-  columLeft3.castShadow = true;
+
 }
 
 function addLight()
@@ -376,7 +379,6 @@ function movLightSpot(){
 function movCPU(){
   //MOVER PALA CPU
   cpuPaddleDirY = (sphere.position.y - cpuPaddle.position.y)*difficulty;
-  //cpuPaddle.position.y += cpuPaddleDirY * paddleSpeed;
 
   // control de la velocidad
   if (Math.abs(cpuPaddleDirY) <= paddleSpeed){
@@ -413,7 +415,11 @@ function goal(){
     document.getElementById("scores").innerHTML = score1 + " - " + score2;
     ballSpeed = 2;//PARA VOLVER A PONER LA VELOCIDAD INICIAL
     if (score1 == maxScore){
+      soundWin = new Sound ("aplauso.mp3");
+      console.log(soundWin);
+      soundWin.play();
       reiniciar("GANASTE.. ¿Quieres volver a jugar?");
+
     }
   }
   if (sphere.position.x <= -PLANE_WIDTH/2){
@@ -424,6 +430,8 @@ function goal(){
     ballSpeed = 2;//PARA VOLVER A PONER LA VELOCIDAD INICIAL
     if (score2 == maxScore){
       reiniciar("PERDISTE.. ¿Quieres volver a jugar?");
+      soundLose = new Sound("abucheo.mp3");
+      soundLose.play();
     }
   }
 }
@@ -435,8 +443,8 @@ function chooseDif(){
     difficulty = 0.1*difficulty;
   }
 }
-function draw()
-{
+
+function draw(){
 
     chooseDif(); //elegir dificultad de la cpu
 
