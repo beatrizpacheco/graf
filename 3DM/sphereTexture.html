@@ -149,7 +149,7 @@
                     sphereAttributes.push(ci * sj);  // Z
 
                     sphereAttributes.push(u);  // Texture X
-                    sphereAttributes.push(v);       // Texture Y
+                    sphereAttributes.push(v);  // Texture Y
 
                 }
 
@@ -254,7 +254,7 @@
 
         function setUniforms() {
             angle += 0.01;
-	        mat4.identity(mvMatrix);
+	          mat4.identity(mvMatrix);
             mat4.translate(mvMatrix, [0.0, 0.0, -6.0]);
             mat4.rotate(mvMatrix, angle, [0.0, 1.0, 0.5]);
             gl.uniformMatrix4fv(mvMatrixUniform, false, mvMatrix);

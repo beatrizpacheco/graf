@@ -1,3 +1,15 @@
+// --
+// Práctica final PONG - Beatriz Pacheco Piñero
+// --
+// Implementadas todas las funcionalidades básicas
+// --
+// Implementados todos los extras propuestos: columnas, shadows, iluminacion pelota, texturas
+// --
+// Otros extras: selector de dificultal al inicio de juego (controla que metas numero correcto)
+//               sonidos de fondo, cuando gana y cuando pierde
+// --
+
+
 // GLOBAL VARIABLES
 const WIDTH = 640,
       HEIGHT = 360;
@@ -52,7 +64,6 @@ var score1 = 0,
     maxScore = 3;//3
 
 // set opponent reaction rate (0 - easiest, 1 - hardest)
-//var difficulty = 0.2;
 var difficulty = 0;
 
 //columnas
@@ -60,11 +71,10 @@ const COLUMN_WIDTH =  20,
       COLUMN_HEIGHT =  20,
       COLUMN_DEPTH = 120;
 
-//sonidos ganar o perder
-var soundWin;
-var soundLose;
-var soundf;
-
+//sonidos de fondo, ganar o perder
+var soundWin = new Sound ("sonidos/aplauso.mp3");;
+var soundLose = new Sound("sonidos/abucheo.mp3");;
+var soundf = new Sound("sonidos/fondo.mp3");;
 
 // GAME FUNCTIONS
 
@@ -78,19 +88,17 @@ function setup()
     addCubeMeshCPU(); //pala cpu
     addColumMesh(); //columnas
     addLight(); //iluminacion (puntual y spot)
-    soundf = new Sound("fondo.mp3");
-    soundf.play();
+    soundf.play(); //música de fondo
+    soundf.loop = true; //es corta, para que se repita
     requestAnimationFrame(draw); //dibujaaa
 }
 
 function Sound(src) {
     this.Sound = document.createElement("audio");
-    // this.Sound.src = src;
-    this.Sound.setAttribute('src', src);
-    // this.Sound.setAttribute("preload", "auto");
-    // this.Sound.setAttribute("controls", "none");
-    this.Sound.setAttribute('autoplay', 'autoplay');
-    // this.Sound.style.display = "none";
+    this.Sound.src = src;
+    this.Sound.setAttribute("preload", "auto");
+    this.Sound.setAttribute("controls", "none");
+    this.Sound.style.display = "none";
     document.body.appendChild(this.Sound);
     this.play = function(){
         this.Sound.play();
@@ -132,8 +140,8 @@ function createScene()
     document.getElementById("winnerBoard").innerHTML = "First to " + maxScore + " wins!";
     document.getElementById("scores").innerHTML = score1 + " - " + score2;
 
-    difficulty = prompt("Choose the dificult of game", "(0 - easiest, 10 - hardest)");
-    difficulty = 0.1*difficulty;
+    //Selector de dificultad
+    chooseDif(); //elegir dificultad de la cpu
 }
 
 function addPlaneMesh()
@@ -142,8 +150,8 @@ function addPlaneMesh()
         PLANE_WIDTH,
         PLANE_HEIGTH );
 
-    var textura = new THREE.TextureLoader().load('js/pista.jpg');
-    var material = new THREE.MeshBasicMaterial({map:textura});
+    var textura = new THREE.TextureLoader().load('texturas/pista.jpg');
+    var material = new THREE.MeshLambertMaterial({map:textura});
 
     // Create a new mesh with sphere geometry
     plane = new THREE.Mesh(geometry, material);
@@ -163,10 +171,10 @@ function addFloorMesh()
     var geometry = new THREE.PlaneGeometry(
         PLANE_WIDTH +50,
         PLANE_HEIGTH +260);
-    var textura = new THREE.TextureLoader().load('js/cesped.jpg');
+    var textura = new THREE.TextureLoader().load('texturas/cesped.jpg');
     textura.wrapS = textura.wrapT = THREE.RepeatWrapping;
     textura.repeat.set (5,5);
-    var material = new THREE.MeshBasicMaterial({map:textura});
+    var material = new THREE.MeshLambertMaterial({map:textura});
 
     // Create a new mesh with sphere geometry
     floor = new THREE.Mesh(geometry, material);
@@ -186,8 +194,8 @@ function addSphereMesh()
         RADIUS,
         SEGMENTS,
         RINGS);
-    var textura = new THREE.TextureLoader().load('js/pelota.jpg');
-    var material = new THREE.MeshBasicMaterial({map:textura});
+    var textura = new THREE.TextureLoader().load('texturas/pelota.jpg');
+    var material = new THREE.MeshLambertMaterial({map:textura});
 
     // Create a new mesh with sphere geometry
     sphere = new THREE.Mesh(geometry, material);
@@ -253,12 +261,11 @@ function addCubeMeshCPU(){
 }
 
 function addColumMesh(){
-
   var geometry = new THREE.BoxGeometry(COLUMN_WIDTH, COLUMN_HEIGHT, COLUMN_DEPTH);
-  var material = new THREE.MeshLambertMaterial(
-      {
-        color: '#87CEEB'
-      });
+  var textura = new THREE.TextureLoader().load('texturas/ladrillo.jpg');
+  textura.wrapS = textura.wrapT = THREE.RepeatWrapping;
+  textura.repeat.set (5,5);
+  var material = new THREE.MeshLambertMaterial({map:textura});
 
   columRight1 = new THREE.Mesh(geometry, material);
   columRight2 = new THREE.Mesh(geometry, material);
@@ -304,7 +311,7 @@ function addLight()
 {
     // Create a point light
     pointLight =
-			new THREE.PointLight(0xffffff);
+			new THREE.PointLight(0xf0f0f0);
 
     // Set its position
     pointLight.position.x = 10;
@@ -333,10 +340,13 @@ function addLight()
 function reiniciar(message){
 
   if(window.confirm(message) == true){
-    score1 = 0;
+    score1 = 0;//reiniciar marcadores y velocidad pelota
     score2 = 0;
     document.getElementById("scores").innerHTML = score1 + " - " + score2;
     ballSpeed = 2;
+    chooseDif();
+    soundf.play();//reiniciar musica fondo
+    soundf.loop = true;
   }else{
     sphere.position.x = 0;
     sphere.position.y = 0;
@@ -352,8 +362,8 @@ function movSphere(){
   sphere.rotation.x += Math.sin(0.5);
   sphere.rotation.y += Math.cos(0.5);
     //CHOCAR PALA
-    if ((sphere.position.x <= playerPaddle.position.x  && (sphere.position.y <= playerPaddle.position.y +  PADDLE_HEIGTH/2 && sphere.position.y >= playerPaddle.position.y -  PADDLE_HEIGTH/2))||
-        (sphere.position.x >= cpuPaddle.position.x  && (sphere.position.y <= cpuPaddle.position.y +  PADDLE_HEIGTH/2 && sphere.position.y >= cpuPaddle.position.y -  PADDLE_HEIGTH/2))){
+    if ((sphere.position.x <= playerPaddle.position.x  + PADDLE_WIDTH/2 && (sphere.position.y <= playerPaddle.position.y +  PADDLE_HEIGTH/2 && sphere.position.y >= playerPaddle.position.y -  PADDLE_HEIGTH/2))||
+        (sphere.position.x >= cpuPaddle.position.x - PADDLE_WIDTH/2 && (sphere.position.y <= cpuPaddle.position.y +  PADDLE_HEIGTH/2 && sphere.position.y >= cpuPaddle.position.y -  PADDLE_HEIGTH/2))){
       ballDirX = -ballDirX;
       ballSpeed += 0.5; //AUMENTAR VELOCIDAD AL CHOCAR CON LA PALA
       if (ballSpeed >= constballSpeed*2){
@@ -415,8 +425,7 @@ function goal(){
     document.getElementById("scores").innerHTML = score1 + " - " + score2;
     ballSpeed = 2;//PARA VOLVER A PONER LA VELOCIDAD INICIAL
     if (score1 == maxScore){
-      soundWin = new Sound ("aplauso.mp3");
-      console.log(soundWin);
+      soundf.stop();
       soundWin.play();
       reiniciar("GANASTE.. ¿Quieres volver a jugar?");
 
@@ -429,24 +438,24 @@ function goal(){
     document.getElementById("scores").innerHTML = score1 + " - " + score2;
     ballSpeed = 2;//PARA VOLVER A PONER LA VELOCIDAD INICIAL
     if (score2 == maxScore){
-      reiniciar("PERDISTE.. ¿Quieres volver a jugar?");
-      soundLose = new Sound("abucheo.mp3");
+      soundf.stop();
       soundLose.play();
+      reiniciar("PERDISTE.. ¿Quieres volver a jugar?");
+
     }
   }
 }
 
 function chooseDif(){
-  if (parseInt(difficulty) == NaN){
-    alert("Choose a number!");
-    difficulty = prompt("Choose the dificult of game", "(0 - easiest, 10 - hardest)");
-    difficulty = 0.1*difficulty;
-  }
+  difficulty = prompt("Choose the dificult of game", "(0 - easiest, 10 - hardest)");
+  while (isNaN(parseInt(difficulty))){
+      alert("No has elegido un número correcto");
+      difficulty = prompt("Choose the dificult of game", "(0 - easiest, 10 - hardest)");
+  };
+  difficulty = 0.1*difficulty;
 }
 
 function draw(){
-
-    chooseDif(); //elegir dificultad de la cpu
 
     movSphere(); //mover el balon
     movLightSpot(); //luz spot que sigue al balon
